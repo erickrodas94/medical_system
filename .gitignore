@@ -1,0 +1,26 @@
+# ========================
+# 1. Credenciales y Seguridad (¡LO MÁS IMPORTANTE!)
+# ========================
+config.local.php
+config.php
+.env
+llaves_aws.txt
+
+# ========================
+# 2. Logs y Errores
+# ========================
+*.log
+error_log
+php_errors.log
+
+# ========================
+# 3. Archivos del Sistema Operativo
+# ========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================
+# 4. Dependencias (Si en el futuro usas Composer para PHP)
+# ========================
+/vendor/
