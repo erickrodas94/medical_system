@@ -1,0 +1,208 @@
+<?php
+namespace App\Controllers;
+
+use App\Models\Patient; // Asegúrate de importar el modelo
+use App\Models\IdentityType;
+
+class PatientController {
+    
+    private $db;
+
+    public function __construct($dbConnection) {
+        // Recibimos la conexión a la base de datos desde el enrutador (index.php principal)
+        $this->db = $dbConnection;
+    }
+
+    /**
+     * Muestra la tabla principal de pacientes
+     */
+    public function index() {
+        if (!isset($_SESSION['user']['id'])) {
+            header('Location: ' . URL_BASE . 'login');
+            exit;
+        }
+
+        // 1. Instanciar el modelo
+        $patientModel = new Patient($this->db);
+        $identityTypeModel = new IdentityType($this->db);
+
+        // 2. Obtener los pacientes de la clínica actual
+        $clinicId = $_SESSION['clinic']['id'];
+        $clinicCountryId = $_SESSION['clinic']['country_id'] ?? 1;
+        $patients = $patientModel->getLatestByClinic($clinicId);
+        $identityTypes = $identityTypeModel->getByCountry($clinicCountryId);
+
+        // 3. Cargar la vista (la variable $patients ya estará disponible en el HTML)
+        require_once '../views/patients/index.php'; // Asegúrate que la ruta coincida con tu estructura
+    }
+
+    /**
+     * Procesa el formulario del Modal para guardar un nuevo paciente
+     */
+    public function store() {
+        if (!isset($_SESSION['user']['id'])) { header('Location: ' . URL_BASE . 'login'); exit; }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            
+            // ==========================================
+            // 1. VALIDACIÓN BACKEND (Protección contra Hackers/Bots)
+            // ==========================================
+            
+            // Trim limpia los espacios en blanco al inicio y al final
+            $firstName = trim($_POST['first_name'] ?? '');
+            $lastName  = trim($_POST['last_name'] ?? '');
+            $email     = trim($_POST['primary_email'] ?? '');
+        
+            $requiresTutor = isset($_POST['requires_tutor']);
+            $identityNumber = trim($_POST['identity_number'] ?? '');
+            $tutorIdentity = trim($_POST['tutor_identity_number'] ?? '');
+            
+            // A. Verificar campos obligatorios
+            if (empty($firstName) || empty($lastName) || empty($_POST['birth_date'])) {
+                $_SESSION['message'] = [
+                    'type' => 'error',
+                    'message' => __('msg_error_empty_fields')
+                ];
+                header('Location: ' . URL_BASE . 'pacientes');
+                exit;
+            }
+
+            // B. Verificar formato de Email (si es que ingresó uno, porque no es obligatorio en la BD)
+            if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $_SESSION['message'] = [
+                    'type' => 'error',
+                    'message' => __('msg_error_email')
+                ];
+                header('Location: ' . URL_BASE . 'pacientes');
+                exit;
+            }
+            
+            // C. Si NO requiere tutor (es adulto) y el ID está vacío
+            if (!$requiresTutor && empty($identityNumber)) {
+                $_SESSION['message'] = ['type' => 'error', 'message' => __('msg_error_identity_required')];
+                header('Location: ' . URL_BASE . 'pacientes');
+                exit;
+            }
+
+            // D. Si SI requiere tutor y el ID del tutor está vacío
+            if ($requiresTutor && empty($tutorIdentity)) {
+                $_SESSION['message'] = ['type' => 'error', 'message' => __('msg_error_tutor_identity_required')];
+                header('Location: ' . URL_BASE . 'pacientes');
+                exit;
+            }
+
+            // ==========================================
+            // 2. PREPARACIÓN DE DATOS
+            // ==========================================
+            $data = [
+                // Identidad del Paciente
+                'identity_type_ID'   => $_POST['identity_type_ID'] ?? null, // <-- FALTABA ESTE
+                'identity_number'    => $identityNumber,
+                
+                // Datos Personales
+                'first_name'         => $firstName,
+                'last_name'          => $lastName,
+                'birth_date'         => $_POST['birth_date'],
+                'gender'             => $_POST['gender'] ?: null,
+                
+                // Contacto y Ubicación
+                'primary_cellphone'  => trim($_POST['primary_cellphone']) ?: null,
+                'primary_email'      => $email ?: null,
+                'country_ID'         => $_POST['country_ID'] ?? 1,
+                'state_ID'           => $_POST['state_ID'] ?? 1,
+                'city_ID'            => $_POST['city_ID'] ?? 1,
+                
+                // Datos del Tutor
+                'requires_tutor'           => isset($_POST['requires_tutor']) ? 1 : 0,
+                'tutor_identity_type_ID'   => $_POST['tutor_identity_type_ID'] ?? null, // <-- FALTABA ESTE
+                'tutor_identity_number'    => $tutorIdentity, // <-- FALTABA ESTE
+                'tutor_first_name'         => trim($_POST['tutor_first_name'] ?? ''),
+                'tutor_last_name'          => trim($_POST['tutor_last_name'] ?? ''),
+                'tutor_phone'              => trim($_POST['tutor_phone'] ?? ''),
+                'tutor_relationship'       => $_POST['tutor_relationship'] ?? null
+            ];
+
+            // Instanciar modelo y guardar
+            $patientModel = new \App\Models\Patient($this->db);
+            $result = $patientModel->create($data);
+
+            if ($result['success']) {
+                $patientId = $result['patient_id'];
+                
+                if ($result['is_new']) {
+                    $_SESSION['message'] = [
+                        'type' => 'success',
+                        'message' => __('msg_patient_saved')
+                    ];
+                } else {
+                    $_SESSION['message'] = [
+                        'type' => 'info',
+                        'message' => __('msg_patient_exists')
+                    ];
+                }
+                
+                // MAGIA: Redirigimos directamente a la vista de "Ver Expediente"
+                header('Location: ' . URL_BASE . 'pacientes/ver/' . $patientId);
+                exit;
+            } else {
+                $_SESSION['message'] = [
+                    'type' => 'error',
+                    'message' => $result['error'] ?? __('msg_error_database')
+                ];
+                header('Location: ' . URL_BASE . 'pacientes');
+                exit;
+            }
+        }
+
+        // Si alguien intenta entrar a /pacientes/guardar desde la URL (GET), lo regresamos
+        header('Location: ' . URL_BASE . 'pacientes');
+        exit;
+    }
+
+    public function search() {
+        // Le decimos al navegador que esto es un JSON, no un HTML
+        header('Content-Type: application/json');
+        
+        if (!isset($_SESSION['user']['id'])) {
+            echo json_encode(['error' => 'No autorizado']);
+            return;
+        }
+
+        $term = $_GET['q'] ?? '';
+        $clinicId = $_SESSION['clinic']['id'];
+        $patientModel = new Patient($this->db);
+
+        // Si borró la búsqueda, devolvemos los últimos 50. Si escribió algo, buscamos.
+        if (trim($term) === '') {
+            $patients = $patientModel->getLatestByClinic($clinicId, 50);
+        } else {
+            $patients = $patientModel->searchPatients($clinicId, trim($term), 50);
+        }
+
+        // Imprimimos el resultado para que JS lo atrape
+        echo json_encode($patients);
+    }
+
+    /**
+     * Muestra el expediente completo de un paciente específico
+     */
+    public function show($id) {
+        if (!isset($_SESSION['user']['id'])) { header('Location: ' . URL_BASE . 'login'); exit; }
+
+        // Aquí luego le pediremos al Modelo los datos completos del paciente usando el $id
+        // Por ahora, solo mostraremos una pantalla en blanco con la alerta de éxito
+
+        require_once '../views/layouts/header.php';
+        require_once '../views/layouts/sidebar.php';
+        
+        echo '<div class="flex-1 flex flex-col h-full overflow-hidden">';
+        require_once '../views/layouts/topbar.php';
+        
+        echo '<main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 p-8">';
+        echo '<h1 class="text-3xl font-bold text-slate-800">Expediente del Paciente #' . htmlspecialchars($id) . '</h1>';
+        echo '<p class="text-slate-500 mt-2">Esta pantalla está en construcción...</p>';
+        echo '</main></div>';
+        
+        require_once '../views/layouts/footer.php';
+    }
+}

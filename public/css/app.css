@@ -1,0 +1,43 @@
+/* Estilos para Alertas Personalizadas */
+/* Base para todas las alertas */
+.swal2-popup {
+    border-radius: 1.25rem !important;
+    padding: 2rem !important;
+    font-family: 'Inter', sans-serif;
+    /* O la que uses en clinic.cloud */
+}
+
+/* Alerta de Error (Corinto) */
+.swal-custom-error {
+    border: 3px solid #7f1d1d !important;
+    /* Corinto oscuro */
+    box-shadow: 0 10px 15px -3px rgba(127, 29, 29, 0.2);
+}
+
+/* Alerta de Advertencia (Mostaza) */
+.swal-custom-warning {
+    border: 3px solid #a16207 !important;
+    /* Mostaza oscuro */
+    box-shadow: 0 10px 15px -3px rgba(161, 98, 7, 0.2);
+}
+
+.swal-custom-success {
+    background-color: #f0fdf4 !important;
+    /* Verde muy claro */
+    border: 2px solid #166534 !important;
+    /* Verde oscuro */
+}
+
+.swal-custom-info {
+    background-color: #eff6ff !important;
+    /* Azul muy claro */
+    border: 2px solid #1e40af !important;
+    /* Azul oscuro */
+}
+
+/* Corrección de textos (por si el login los pone blancos) */
+.swal2-title,
+.swal2-html-container {
+    color: #1e293b !important;
+    /* Azul muy oscuro, casi negro */
+}
