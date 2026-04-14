@@ -1,5 +1,20 @@
 <?php
 return [
+    // Menu
+    'menu_dashboard' => 'Panel de Control',
+    'menu_medical_area' => 'Área Médica',
+    'menu_appointments' => 'Agenda',
+    'menu_patients' => 'Pacientes',
+    'menu_admin_area' => 'Área Administrativa',
+    'menu_quotations' => 'Cotizaciones',
+    'menu_inventory' => 'Inventario',
+    'menu_finance' => 'Finanzas',
+    'menu_reports' => 'Reportes',
+    'menu_config_area' => 'Configuraciones',
+    'menu_clinic_settings' => 'Configuración Clínica',
+    'menu_services' => 'Servicios',
+    'menu_team' => 'Equipo y Roles',
+
     // Botones
 
     'confirm_btn' => 'Sí, cerrar sesión',
@@ -65,7 +80,14 @@ return [
     'modal_new_patient_subtitle' => 'Ingresa los datos generales para abrir el expediente.',
     'section_personal_data' => 'Datos Personales',
     'section_contact_location' => 'Contacto y Ubicación',
+    'modal_close_title' => '¿Desea cancelar el registro?',
+    'modal_close_text' => 'Se perderán los datos ingresados.',
+    // Modal: Botones
+    'modal_close_confirm' => 'Sí, cancelar',
+    'modal_close_cancel' => 'No, continuar',
     // Modal: Formularios
+    'modal_new_patient_doctor' => 'Doctor Responsable',
+    'modal_patient_country' => 'País',
     'lbl_identity_number' => 'Documento de Identidad',
     'lbl_identity_number_help' => 'Número de identidad del paciente. Ej: 1234 56789 0101',
     'lbl_identity_type' => 'Tipo de Documento',
@@ -79,9 +101,12 @@ return [
     'gender_female' => 'Femenino',
     'gender_male' => 'Masculino',
     'gender_other' => 'Otro',
+    'select_modal_me' => 'Asignarme',
+    'select_lbl_modal_doctor' => 'Seleccione el médico tratante...',
     // Modal: Tutor
     'tutor_question' => '¿Paciente requiere Tutor / Encargado?',
     'tutor_help_text' => 'Actívalo si el paciente es menor de edad o requiere asistencia legal.',
+    'lbl_tutor_country' => 'País del Tutor',
     'lbl_tutor_identity' => 'Documento de Identidad del Tutor *',
     'lbl_tutor_identity_help' => 'Número de identidad del responsable del paciente. Ej: 1234 56789 0101',
     'lbl_tutor_identity_type' => 'Tipo de Documento del Tutor',
@@ -90,13 +115,17 @@ return [
     'lbl_tutor_relation' => 'Parentesco',
     'lbl_tutor_phone' => 'Teléfono del Tutor *',
     // Parentescos
-    'rel_mother' => 'Madre',
-    'rel_father' => 'Padre',
-    'rel_partner' => 'Pareja',
-    'rel_grandparent' => 'Abuelo/a',
-    'rel_guardian' => 'Tutor Legal',
-    'rel_child' => 'Hijo/a (Para adulto mayor)',
-    'rel_other' => 'Otro',
+    'rel_Mother' => 'Madre',
+    'rel_Father' => 'Padre',
+    'rel_Partner' => 'Pareja',
+    'rel_Grandparent' => 'Abuelo/a',
+    'rel_Legal Guardian' => 'Tutor Legal',
+    'rel_Child' => 'Hijo/a (Para adulto mayor)',
+    'rel_Other' => 'Otro',
+
+    // Estados
+    'status_Active' => 'Activo',
+    'status_Inactive' => 'Inactivo',
 
     // Países e Identidad
     // Guatemala
@@ -104,7 +133,7 @@ return [
     'label_division_gt' => 'Departamento',
     'label_municipality_gt' => 'Municipio',
     'label_identity_gt' => 'CUI / DPI',
-    'lbl_dpi' => 'DPI (Documento Personal de Identidad)',
+    'lbl_dpi' => 'DPI 1234 56789 1011',
     'lbl_passport' => 'Pasaporte',
     'placeholder_dpi' => 'Ej: 1234 56789 0101',
     'placeholder_passport' => 'Número de pasaporte vigente',

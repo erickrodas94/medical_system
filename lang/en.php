@@ -1,5 +1,20 @@
 <?php
 return [
+    // Menu
+    'menu_dashboard' => 'Dashboard',
+    'menu_medical_area' => 'Medical Area',
+    'menu_appointments' => 'Appointments',
+    'menu_patients' => 'Patients',
+    'menu_admin_area' => 'Administrative Area',
+    'menu_quotations' => 'Quotations',
+    'menu_inventory' => 'Inventory',
+    'menu_finance' => 'Finance',
+    'menu_reports' => 'Reports',
+    'menu_config_area' => 'Configurations',
+    'menu_clinic_settings' => 'Clinic Settings',
+    'menu_services' => 'Services',
+    'menu_team' => 'Team and Roles',
+
     // Buttons
 
     'confirm_btn' => 'Yes, logout',
@@ -65,7 +80,14 @@ return [
     'modal_new_patient_subtitle' => 'Enter general information to open the medical record.',
     'section_personal_data' => 'Personal Information',
     'section_contact_location' => 'Contact and Location',
-    // Modal: Forms
+    'modal_close_title' => '¿Desea cancelar el registro?',
+    'modal_close_text' => 'Se perderán los datos ingresados.',
+    // Modal: Botones
+    'modal_close_confirm' => 'Sí, cancelar',
+    'modal_close_cancel' => 'No, continuar',
+    // Modal: Formularios
+    'modal_new_patient_doctor' => 'Doctor',
+    'modal_patient_country' => 'Country',
     'lbl_identity_number' => 'Identity Number',
     'lbl_identity_number_help' => 'Patient identity number. Ej: 1234 56789 0101',
     'lbl_identity_type' => 'Identity Type',
@@ -79,9 +101,12 @@ return [
     'gender_female' => 'Female',
     'gender_male' => 'Male',
     'gender_other' => 'Other',
+    'select_modal_me' => 'Assign me',
+    'select_lbl_modal_doctor' => 'Select the attending physician...',
     // Modal: Tutor
     'tutor_question' => 'Does the patient require a Tutor / Guardian?',
     'tutor_help_text' => 'Enable this if the patient is a minor or requires legal assistance.',
+    'lbl_tutor_country' => 'Tutor Country',
     'lbl_tutor_identity' => 'Tutor Identity Number *',
     'lbl_tutor_identity_help' => 'Tutor identity number. Ej: 1234 56789 0101',
     'lbl_tutor_identity_type' => 'Tutor Identity Type',
@@ -90,21 +115,25 @@ return [
     'lbl_tutor_relation' => 'Relationship',
     'lbl_tutor_phone' => 'Tutor Phone Number *',
     // Relationships
-    'rel_mother' => 'Mother',
-    'rel_father' => 'Father',
-    'rel_partner' => 'Partner',
-    'rel_grandparent' => 'Grandparent',
-    'rel_guardian' => 'Legal Guardian',
-    'rel_child' => 'Child (For elderly patients)',
-    'rel_other' => 'Other',
+    'rel_Mother' => 'Mother',
+    'rel_Father' => 'Father',
+    'rel_Partner' => 'Partner',
+    'rel_Grandparent' => 'Grandparent',
+    'rel_Legal Guardian' => 'Legal Guardian',
+    'rel_Child' => 'Child (For elderly patients)',
+    'rel_Other' => 'Other',
+
+    // Estados
+    'status_Active' => 'Active',
+    'status_Inactive' => 'Inactive',
 
     // Countries & Identity
     // Guatemala
     'GT' => 'Guatemala',
     'label_division_gt' => 'Department',
     'label_municipality_gt' => 'Municipality',
-    'label_identity_gt' => 'National ID',
-    'lbl_dpi' => 'DPI (National ID)',
+    'label_identity_gt' => 'DPI',
+    'lbl_dpi' => 'DPI 1234 56789 1011',
     'lbl_passport' => 'Passport',
     'placeholder_dpi' => 'Ex: 1234 56789 0101',
     'placeholder_passport' => 'Valid passport number',

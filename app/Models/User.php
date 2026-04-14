@@ -43,4 +43,23 @@ class User {
         $stmt = $this->db->prepare($sql);
         return $stmt->execute(['token' => $sessionToken]);
     }
+
+    /**
+     * Obtiene los doctores activos de una clínica específica.
+     * Excluye a personal administrativo que no atiende pacientes (is_doctor = false)
+     */
+    public function getDoctorsByClinic($clinicId) {
+        $sql = "SELECT ID, first_name, last_name, email 
+                FROM users 
+                WHERE clinic_ID = :clinicId 
+                  AND is_doctor = 1 
+                  AND is_active = 1 
+                  AND deleted_at IS NULL 
+                ORDER BY first_name ASC, last_name ASC";
+                
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['clinicId' => $clinicId]);
+        
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

@@ -1,8 +1,10 @@
 <?php
 namespace App\Controllers;
 
+use App\Models\User;
 use App\Models\Patient; // Asegúrate de importar el modelo
 use App\Models\IdentityType;
+use App\Models\Country;
 
 class PatientController {
     
@@ -17,23 +19,54 @@ class PatientController {
      * Muestra la tabla principal de pacientes
      */
     public function index() {
+        // 1. Verificación de Seguridad Básica
         if (!isset($_SESSION['user']['id'])) {
             header('Location: ' . URL_BASE . 'login');
             exit;
         }
 
-        // 1. Instanciar el modelo
-        $patientModel = new Patient($this->db);
-        $identityTypeModel = new IdentityType($this->db);
-
-        // 2. Obtener los pacientes de la clínica actual
+        // 2. Extracción de Variables de Sesión
+        $userId = $_SESSION['user']['id'];
         $clinicId = $_SESSION['clinic']['id'];
         $clinicCountryId = $_SESSION['clinic']['country_id'] ?? 1;
-        $patients = $patientModel->getLatestByClinic($clinicId);
-        $identityTypes = $identityTypeModel->getByCountry($clinicCountryId);
 
-        // 3. Cargar la vista (la variable $patients ya estará disponible en el HTML)
-        require_once '../views/patients/index.php'; // Asegúrate que la ruta coincida con tu estructura
+        // Evaluación de Permisos (JSON)
+        $permissions = $_SESSION['user']['permissions'] ?? []; 
+        $canSeeAll = isset($permissions['all_access']) || isset($permissions['all_patients']);
+
+        // 3. Instanciar los Modelos
+        $userModel = new User($this->db);
+        $patientModel = new Patient($this->db);
+        $identityTypeModel = new IdentityType($this->db);
+        $countryModel = new Country($this->db);
+
+        // 4. Obtener Datos para los Selects del Modal
+        $doctors = $userModel->getDoctorsByClinic($clinicId);
+        $identityTypes = $identityTypeModel->getByCountry($clinicCountryId);
+        $countries = $countryModel->getAll();
+        
+        // 5. Obtener los Pacientes (Aplicando el filtro de Seguridad/Permisos)
+        // Sustituimos getLatestByClinic por getPatientsForUser
+        $patients = $patientModel->getPatientsForUser($clinicId, $userId, $canSeeAll);
+        
+        // ==========================================
+        // 6. TRADUCCIÓN AL VUELO PARA CADA PACIENTE
+        // ==========================================
+        foreach ($patients as &$p) {
+            // Traducimos el estado dinámicamente
+            $p['status_translated'] = __('status_' . $p['patient_status']);
+            
+            // Traducimos la relación del tutor (si existe)
+            if (!empty($p['tutor_relation'])) {
+                $p['tutor_relation_translated'] = __('rel_' . $p['tutor_relation']);
+            } else {
+                $p['tutor_relation_translated'] = '';
+            }
+        }
+        unset($p); // Buena práctica de seguridad en PHP tras usar referencias
+
+        // 7. Cargar la vista (todas las variables anteriores estarán disponibles en el HTML)
+        require_once '../views/patients/index.php';
     }
 
     /**
@@ -111,9 +144,13 @@ class PatientController {
                 'country_ID'         => $_POST['country_ID'] ?? 1,
                 'state_ID'           => $_POST['state_ID'] ?? 1,
                 'city_ID'            => $_POST['city_ID'] ?? 1,
+
+                // Usuario asignado
+                'assigned_doctor_ID' => $_POST['assigned_doctor_ID'] ?? null,
                 
                 // Datos del Tutor
                 'requires_tutor'           => isset($_POST['requires_tutor']) ? 1 : 0,
+                'tutor_country_ID'         => $_POST['tutor_country_ID'] ?? $_POST['country_ID'],
                 'tutor_identity_type_ID'   => $_POST['tutor_identity_type_ID'] ?? null, // <-- FALTABA ESTE
                 'tutor_identity_number'    => $tutorIdentity, // <-- FALTABA ESTE
                 'tutor_first_name'         => trim($_POST['tutor_first_name'] ?? ''),
@@ -177,6 +214,19 @@ class PatientController {
             $patients = $patientModel->getLatestByClinic($clinicId, 50);
         } else {
             $patients = $patientModel->searchPatients($clinicId, trim($term), 50);
+        }
+
+        // Iteramos para traducir los ENUMs antes de enviarlos a JS
+        foreach ($patients as &$p) {
+            // Traducimos el estado
+            $p['status_translated'] = __('status_' . $p['patient_status']);
+            
+            // Traducimos la relación del tutor (si existe)
+            if (!empty($p['tutor_relation'])) {
+                $p['tutor_relation_translated'] = __('rel_' . $p['tutor_relation']);
+            } else {
+                $p['tutor_relation_translated'] = '';
+            }
         }
 
         // Imprimimos el resultado para que JS lo atrape

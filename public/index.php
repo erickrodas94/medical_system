@@ -16,6 +16,9 @@ use App\Core\Router;
 
 $router = new Router($pdo);
 
+// Rutas del Sistema / AJAX
+$router->get('documentos/por-pais', 'SystemController@getIdentityTypesByCountry');
+
 // Rutas de Autenticación
 $router->get('login', 'AuthController@showLogin');
 $router->post('login', 'AuthController@login');

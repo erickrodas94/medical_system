@@ -65,7 +65,7 @@
                                         <p class="text-slate-600 font-medium flex items-center">
                                             <?= htmlspecialchars($p['tutor_phone']) ?>
                                             <span class="ml-2 px-1.5 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase rounded border border-indigo-100">
-                                                <?= htmlspecialchars($p['tutor_relation']) ?>
+                                                <?= $p['tutor_relation_translated'] ?>
                                             </span>
                                         </p>
                                     <?php else: ?>
@@ -75,7 +75,9 @@
                                     <p class="text-slate-400 text-xs mt-0.5"><?= htmlspecialchars($p['primary_email'] ?? '---') ?></p>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="px-3 py-1 text-[10px] font-bold uppercase rounded-full bg-emerald-100 text-emerald-700"><?= __('status_active') ?></span>
+                                    <span class="px-3 py-1 text-[10px] font-bold uppercase rounded-full bg-emerald-100 text-emerald-700">
+                                        <?= htmlspecialchars($p['status_translated']) ?>
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex justify-end space-x-2">
@@ -119,6 +121,16 @@
                 <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4"><?= __('section_personal_data') ?></h4>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1"><?= __('modal_patient_country') ?></label>
+                            <select name="country_ID" id="patient_country_ID" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white text-sm" onchange="loadIdentityTypes(this.value, 'identity_type_ID')">
+                                <?php foreach($countries as $c): ?>
+                                    <option value="<?= $c['ID'] ?>" <?= $c['ID'] == 1 ? 'selected' : '' ?>><?= __($c['iso_code']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1"><?= __('lbl_identity_type') ?></label>
                             <select name="identity_type_ID" id="identity_type_ID" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white text-sm">
@@ -200,6 +212,16 @@
                     </div>
 
                     <div id="tutorFields" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 hidden overflow-hidden transition-all duration-300">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1"><?= __('lbl_tutor_country') ?></label>
+                            <select name="tutor_identity_type_ID" id="tutor_identity_type_ID" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white text-sm" onchange="loadIdentityTypes(this.value, 'tutor_identity_type_ID')">
+                                <?php foreach($countries as $c): ?>
+                                    <option value="<?= $c['ID'] ?>" <?= $c['ID'] == $clinicCountryId ? 'selected' : '' ?>>
+                                        <?= __($c['iso_code']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                         <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1"><?= __('lbl_tutor_identity_type') ?></label>
@@ -226,13 +248,13 @@
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1"><?= __('lbl_tutor_relation') ?></label>
                             <select name="tutor_relationship" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                                <option value="Mother"><?= __('rel_mother') ?></option>
-                                <option value="Father"><?= __('rel_father') ?></option>
-                                <option value="Partner"><?= __('rel_partner') ?></option>
-                                <option value="Grandparent"><?= __('rel_grandparent') ?></option>
-                                <option value="Legal Guardian"><?= __('rel_guardian') ?? 'Tutor Legal' ?></option>
-                                <option value="Child"><?= __('rel_child') ?></option>
-                                <option value="Other"><?= __('rel_other') ?></option>
+                                <option value="Mother"><?= __('rel_Mother') ?></option>
+                                <option value="Father"><?= __('rel_Father') ?></option>
+                                <option value="Partner"><?= __('rel_Partner') ?></option>
+                                <option value="Grandparent"><?= __('rel_Grandparent') ?></option>
+                                <option value="Legal Guardian"><?= __('rel_Legal Guardian') ?? 'Tutor Legal' ?></option>
+                                <option value="Child"><?= __('rel_Child') ?></option>
+                                <option value="Other"><?= __('rel_Other') ?></option>
                             </select>
                         </div>
                         <div>
@@ -240,6 +262,27 @@
                             <input type="tel" name="tutor_phone" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
                     </div>
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-1"><?= __('modal_new_patient_doctor') ?></label>
+                    <select name="assigned_doctor_ID" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white text-sm">
+                        <?php 
+                        // Asumiendo que guardaste si es doctor en la sesión al hacer login
+                        $isCurrentUserDoctor = $_SESSION['user']['is_doctor'] ?? false; 
+                        
+                        if ($isCurrentUserDoctor): 
+                        ?>
+                            <option value="<?= $_SESSION['user']['id'] ?>"><?= __('select_modal_me') ?></option>
+                        <?php else: ?>
+                            <option value=""><?= __('select_lbl_modal_doctor') ?></option>
+                        <?php endif; ?>
+
+                        <?php foreach ($doctors as $doc): ?>
+                            <option value="<?= $doc['ID'] ?>">
+                                Dr(a). <?= htmlspecialchars($doc['first_name'] . ' ' . $doc['last_name']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
             </form>
         </div>
@@ -416,11 +459,11 @@
                                             ${p.primary_cellphone 
                                                 ? `<p class="text-slate-600 font-medium">${p.primary_cellphone}</p>` 
                                                 : (p.tutor_phone 
-                                                    ? `<p class="text-slate-600 font-medium flex items-center">${p.tutor_phone} <span class="ml-2 px-1.5 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase rounded border border-indigo-100">${p.tutor_relation}</span></p>`
+                                                    ? `<p class="text-slate-600 font-medium flex items-center">${p.tutor_phone} <span class="ml-2 px-1.5 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase rounded border border-indigo-100">${p.tutor_relation_translated}</span></p>`
                                                     : `<p class="text-slate-400 font-medium">---</p>`)}
                                             <p class="text-slate-400 text-xs">${p.primary_email || '---'}</p>
                                         </td>
-                                        <td class="px-6 py-4"><span class="px-3 py-1 text-[10px] font-bold uppercase rounded-full bg-emerald-100 text-emerald-700"><?= __('status_active') ?></span></td>
+                                        <td class="px-6 py-4"><span class="px-3 py-1 text-[10px] font-bold uppercase rounded-full bg-emerald-100 text-emerald-700">${p.status_translated}</span></td>
                                         <td class="px-6 py-4 text-right">
                                             <div class="flex justify-end space-x-2">
                                                 <a href="${urlBase}pacientes/ver/${p.patient_id}" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><i data-lucide="eye" class="w-5 h-5"></i></a>
@@ -449,6 +492,46 @@
         m.classList.add('opacity-0');
         m.children[1].classList.add('scale-95');
         setTimeout(() => { m.classList.add('hidden'); }, 300);
+    }
+
+    // --- 8. CARGA DINÁMICA DE DOCUMENTOS POR PAÍS ---
+    function loadIdentityTypes(countryId, targetSelectId) {
+        const selectDoc = document.getElementById(targetSelectId);
+        if (!selectDoc) return;
+
+        // Mostramos "Cargando..." mientras esperamos al servidor
+        selectDoc.innerHTML = '<option value="">Cargando...</option>';
+
+        // Hacemos la petición a la ruta que creamos en el Router
+        fetch(`${urlBase}documentos/por-pais?id=${countryId}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Error en la red');
+                return response.json();
+            })
+            .then(data => {
+                // Limpiamos y ponemos la opción por defecto
+                selectDoc.innerHTML = '<option value="">Seleccione...</option>';
+                
+                // Recorremos los documentos que nos devolvió PHP y los agregamos al select
+                data.forEach(type => {
+                    const opt = document.createElement('option');
+                    opt.value = type.ID;
+                    
+                    // Aquí usamos el label_key (ej. 'lbl_dpi'). 
+                    // Si tienes las traducciones expuestas en JS, podrías traducirlo aquí.
+                    // Si no, mostrará el nombre técnico o puedes ajustar PHP para que devuelva la palabra ya traducida.
+                    opt.textContent = type.label_key; 
+                    
+                    // ¡Vital para tu validación Frontend!
+                    opt.setAttribute('data-regex', type.validation_regex);
+                    
+                    selectDoc.appendChild(opt);
+                });
+            })
+            .catch(error => {
+                console.error('Error obteniendo documentos:', error);
+                selectDoc.innerHTML = '<option value="">Error al cargar</option>';
+            });
     }
 </script>
 

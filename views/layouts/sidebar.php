@@ -38,24 +38,24 @@
     <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
         
         <a href="<?= URL_BASE ?>dashboard" class="<?= navClass('dashboard', $current_module) ?>">
-            <i data-lucide="layout-dashboard" class="<?= iconClass('dashboard', $current_module) ?>"></i> Dashboard
+            <i data-lucide="layout-dashboard" class="<?= iconClass('dashboard', $current_module) ?>"></i> <?= __('menu_dashboard') ?>
         </a>
 
         <?php if(hasPermission('view_calendar') || hasPermission('view_patients') || hasPermission('manage_consultations')): ?>
         <div class="pt-2 pb-1">
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-4">Área Médica</p>
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-4"><?= __('menu_medical_area') ?></p>
         </div>
         <?php endif; ?>
 
         <?php if(hasPermission('view_calendar')): ?>
         <a href="<?= URL_BASE ?>agenda" class="<?= navClass('agenda', $current_module) ?>">
-            <i data-lucide="calendar" class="<?= iconClass('agenda', $current_module) ?>"></i> Agenda
+            <i data-lucide="calendar" class="<?= iconClass('agenda', $current_module) ?>"></i> <?= __('menu_appointments') ?>
         </a>
         <?php endif; ?>
 
         <?php if(hasPermission('view_patients')): ?>
         <a href="<?= URL_BASE ?>pacientes" class="<?= navClass('pacientes', $current_module) ?>">
-            <i data-lucide="users" class="<?= iconClass('pacientes', $current_module) ?>"></i> Pacientes
+            <i data-lucide="users" class="<?= iconClass('pacientes', $current_module) ?>"></i> <?= __('menu_patients') ?>
         </a>
         <?php endif; ?>
 
@@ -67,50 +67,50 @@
 
         <?php if(hasPermission('manage_quotes') || hasPermission('manage_inventory') || hasPermission('view_finances')): ?>
         <div class="pt-4 pb-1">
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-4">Administración</p>
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-4"><?= __('menu_admin_area') ?></p>
         </div>
         <?php endif; ?>
 
         <?php if(hasPermission('manage_quotes')): ?>
         <a href="<?= URL_BASE ?>cotizaciones" class="<?= navClass('cotizaciones', $current_module) ?>">
-            <i data-lucide="file-text" class="<?= iconClass('cotizaciones', $current_module) ?>"></i> Cotizaciones
+            <i data-lucide="file-text" class="<?= iconClass('cotizaciones', $current_module) ?>"></i> <?= __('menu_quotations') ?>
         </a>
         <?php endif; ?>
 
         <?php if(hasPermission('manage_inventory')): ?>
         <a href="<?= URL_BASE ?>inventario" class="<?= navClass('inventario', $current_module) ?>">
-            <i data-lucide="package" class="<?= iconClass('inventario', $current_module) ?>"></i> Inventario
+            <i data-lucide="package" class="<?= iconClass('inventario', $current_module) ?>"></i> <?= __('menu_inventory') ?>
         </a>
         <?php endif; ?>
 
         <?php if(hasPermission('view_finances')): ?>
         <a href="<?= URL_BASE ?>finanzas" class="<?= navClass('finanzas', $current_module) ?>">
-            <i data-lucide="wallet" class="<?= iconClass('finanzas', $current_module) ?>"></i> Finanzas
+            <i data-lucide="wallet" class="<?= iconClass('finanzas', $current_module) ?>"></i> <?= __('menu_finance') ?>
         </a>
         <?php endif; ?>
 
-        <?php if(hasPermission('manage_services') || hasPermission('manage_users')): ?>
+        <?php if(hasPermission('manage_clinic') || hasPermission('manage_services') || hasPermission('manage_users')): ?>
         <div class="pt-4 pb-1">
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-4">Configuración</p>
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-4"><?= __('menu_config_area') ?></p>
         </div>
         <?php endif; ?>
 
         <?php if(hasPermission('manage_clinic')): ?>
         <a href="<?= URL_BASE ?>configuracion-clinica" class="<?= navClass('configuracion-clinica', $current_module) ?>">
             <i data-lucide="building-2" class="<?= iconClass('configuracion-clinica', $current_module) ?>"></i> 
-            Configuración Clínica
+            <?= __('menu_clinic_settings') ?>
         </a>
         <?php endif; ?>
 
         <?php if(hasPermission('manage_services')): ?>
         <a href="<?= URL_BASE ?>servicios" class="<?= navClass('servicios', $current_module) ?>">
-            <i data-lucide="cog" class="<?= iconClass('servicios', $current_module) ?>"></i> Servicios
+            <i data-lucide="cog" class="<?= iconClass('servicios', $current_module) ?>"></i> <?= __('menu_services') ?>
         </a>
         <?php endif; ?>
 
         <?php if(hasPermission('manage_users')): ?>
         <a href="<?= URL_BASE ?>equipo" class="<?= navClass('equipo', $current_module) ?>">
-            <i data-lucide="user-cog" class="<?= iconClass('equipo', $current_module) ?>"></i> Equipo y Roles
+            <i data-lucide="user-cog" class="<?= iconClass('equipo', $current_module) ?>"></i> <?= __('menu_team') ?>
         </a>
         <?php endif; ?>
         

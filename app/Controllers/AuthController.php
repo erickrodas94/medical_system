@@ -79,6 +79,7 @@ class AuthController {
             'email' => $user['email'],
             'lang' => $user['preferred_language'] ?? 'es',
             'profile_pic' => $user['profile_pic_path'],
+            'is_doctor' => $user['is_doctor'],
             'role_name' => $user['role_name'],
             'permissions' => $userPermissions
         ];
