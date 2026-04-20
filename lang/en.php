@@ -153,6 +153,10 @@ return [
     'total_quantity_placeholder' => 'Ex. 1 box / 21 pills',
     'additional_notes' => 'Additional Notes',
     'additional_notes_placeholder' => 'Ex. Take with a full stomach',
+    'prescription_only_evolution' => 'Medical prescription issuance',
+    'msg_prescription_saved' => 'Prescription issued and saved successfully.',
+    'msg_triage_saved' => 'Triage registered correctly.',
+    'msg_case_saved' => 'Clinical case opened successfully.',
 
     // Block 4: Administration & Billing
     'billing_and_admin' => 'Billing and Administration',

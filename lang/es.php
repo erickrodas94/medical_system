@@ -153,6 +153,10 @@ return [
     'total_quantity_placeholder' => 'Ej. 1 caja / 21 pastillas',
     'additional_notes' => 'Notas Adicionales',
     'additional_notes_placeholder' => 'Ej. Tomar con estómago lleno',
+    'prescription_only_evolution' => 'Medical prescription issuance',
+    'msg_prescription_saved' => 'Prescription issued and saved successfully.',
+    'msg_triage_saved' => 'Triage registered correctly.',
+    'msg_case_saved' => 'Clinical case opened successfully.',
 
     // Bloque 4: Administración y Cobro
     'billing_and_admin' => 'Cobro y Administración',
