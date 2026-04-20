@@ -59,9 +59,9 @@
         </a>
         <?php endif; ?>
 
-        <?php if(hasPermission('manage_consultations')): ?>
-        <a href="<?= URL_BASE ?>consultas" class="<?= navClass('consultas', $current_module) ?>">
-            <i data-lucide="stethoscope" class="<?= iconClass('consultas', $current_module) ?>"></i> Consultas
+        <?php if(hasPermission('manage_cloud')): ?>
+        <a href="<?= URL_BASE ?>cloud" class="<?= navClass('cloud', $current_module) ?>">
+            <i data-lucide="cloud" class="<?= iconClass('cloud', $current_module) ?>"></i> <?= __('menu_cloud') ?>
         </a>
         <?php endif; ?>
 

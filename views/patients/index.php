@@ -480,21 +480,7 @@
         }
     });
 
-    // --- 7. FUNCIONES GLOBALES DEL MODAL ---
-    function openModal(modalId) {
-        const m = document.getElementById(modalId);
-        m.classList.remove('hidden');
-        setTimeout(() => { m.classList.remove('opacity-0'); m.children[1].classList.remove('scale-95'); }, 10);
-    }
-
-    function closeModal(modalId) {
-        const m = document.getElementById(modalId);
-        m.classList.add('opacity-0');
-        m.children[1].classList.add('scale-95');
-        setTimeout(() => { m.classList.add('hidden'); }, 300);
-    }
-
-    // --- 8. CARGA DINÁMICA DE DOCUMENTOS POR PAÍS ---
+    // --- 7. CARGA DINÁMICA DE DOCUMENTOS POR PAÍS ---
     function loadIdentityTypes(countryId, targetSelectId) {
         const selectDoc = document.getElementById(targetSelectId);
         if (!selectDoc) return;

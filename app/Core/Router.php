@@ -42,8 +42,10 @@ class Router {
             }
         }
 
-        // 3. Si definitivamente no existe, 404
-        echo "404 - Página no encontrada";
+        // 3. // SI LLEGA AQUÍ, NO HUBO COINCIDENCIA -> MOSTRAR 404
+        http_response_code(404);
+        require_once '../views/errors/404.php';
+        exit;
     }
 
     private function callAction($handler, $params = []) {

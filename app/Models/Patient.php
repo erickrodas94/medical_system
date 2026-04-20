@@ -304,45 +304,85 @@ class Patient {
      *  Obtiene los pacientes de cada usuario
      */
     public function getPatientsForUser($clinicId, $userId, $isAdmin, $limit = 50) {
-    if ($isAdmin) {
-        // El Admin ve todo (Tu consulta actual)
-        $sql = "SELECT p.*, cp.ID as patient_id, cp.patient_status,
+        if ($isAdmin) {
+            // El Admin ve todo (Tu consulta actual)
+            $sql = "SELECT p.*, cp.ID as patient_id, cp.patient_status,
+                        t.first_name as tutor_fname, t.last_name as tutor_lname, 
+                        t.primary_cellphone as tutor_phone, pg.relationship as tutor_relation
+                    FROM clinic_patients cp
+                    INNER JOIN persons p ON cp.person_ID = p.ID
+                    LEFT JOIN person_guardians pg ON p.ID = pg.dependent_person_ID
+                    LEFT JOIN persons t ON pg.responsible_person_ID = t.ID
+                    WHERE cp.clinic_ID = :clinicId AND cp.deleted_at IS NULL
+                    ORDER BY cp.created_at DESC LIMIT :limit";
+                    
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindValue(':clinicId', $clinicId, \PDO::PARAM_INT);
+            $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
+            $stmt->execute();
+            
+        } else {
+            // El Doctor solo ve los suyos (Gracias al INNER JOIN)
+            $sql = "SELECT p.*, cp.ID as patient_id, cp.patient_status,
+                        t.first_name as tutor_fname, t.last_name as tutor_lname, 
+                        t.primary_cellphone as tutor_phone, pg.relationship as tutor_relation
+                    FROM clinic_patients cp
+                    INNER JOIN persons p ON cp.person_ID = p.ID
+                    INNER JOIN clinic_patient_users cpu ON cp.ID = cpu.clinic_patient_ID
+                    LEFT JOIN person_guardians pg ON p.ID = pg.dependent_person_ID
+                    LEFT JOIN persons t ON pg.responsible_person_ID = t.ID
+                    WHERE cp.clinic_ID = :clinicId 
+                    AND cpu.user_ID = :userId 
+                    AND cp.deleted_at IS NULL
+                    ORDER BY cp.created_at DESC LIMIT :limit";
+                    
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindValue(':clinicId', $clinicId, \PDO::PARAM_INT);
+            $stmt->bindValue(':userId', $userId, \PDO::PARAM_INT);
+            $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
+            $stmt->execute();
+        }
+        
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Obtiene el expediente de un paciente, respetando los permisos del usuario
+     */
+    public function getByIdAndUser($patientId, $clinicId, $userId, $canSeeAll) {
+        $sql = "SELECT p.*, cp.ID as patient_id, cp.patient_status, cp.created_at as registered_at,
+                       it.label_key as identity_type_label,
                        t.first_name as tutor_fname, t.last_name as tutor_lname, 
-                       t.primary_cellphone as tutor_phone, pg.relationship as tutor_relation
+                       t.primary_cellphone as tutor_phone, pg.relationship as tutor_relation,
+                       t.identity_number as tutor_identity
                 FROM clinic_patients cp
                 INNER JOIN persons p ON cp.person_ID = p.ID
+                LEFT JOIN identity_types it ON p.identity_type_ID = it.ID
                 LEFT JOIN person_guardians pg ON p.ID = pg.dependent_person_ID
-                LEFT JOIN persons t ON pg.responsible_person_ID = t.ID
-                WHERE cp.clinic_ID = :clinicId AND cp.deleted_at IS NULL
-                ORDER BY cp.created_at DESC LIMIT :limit";
+                LEFT JOIN persons t ON pg.responsible_person_ID = t.ID ";
+        
+        // Si no es admin, obligamos a que exista un registro en clinic_patient_users
+        if (!$canSeeAll) {
+            $sql .= " INNER JOIN clinic_patient_users cpu ON cp.ID = cpu.clinic_patient_ID ";
+        }
+        
+        $sql .= " WHERE cp.ID = :patientId AND cp.clinic_ID = :clinicId AND cp.deleted_at IS NULL ";
+        
+        // Si no es admin, filtramos por su ID
+        if (!$canSeeAll) {
+            $sql .= " AND cpu.user_ID = :userId AND cpu.deleted_at IS NULL ";
+        }
+        
+        $sql .= " LIMIT 1";
                 
         $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':patientId', $patientId, \PDO::PARAM_INT);
         $stmt->bindValue(':clinicId', $clinicId, \PDO::PARAM_INT);
-        $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        if (!$canSeeAll) {
+            $stmt->bindValue(':userId', $userId, \PDO::PARAM_INT);
+        }
         $stmt->execute();
         
-    } else {
-        // El Doctor solo ve los suyos (Gracias al INNER JOIN)
-        $sql = "SELECT p.*, cp.ID as patient_id, cp.patient_status,
-                       t.first_name as tutor_fname, t.last_name as tutor_lname, 
-                       t.primary_cellphone as tutor_phone, pg.relationship as tutor_relation
-                FROM clinic_patients cp
-                INNER JOIN persons p ON cp.person_ID = p.ID
-                INNER JOIN clinic_patient_users cpu ON cp.ID = cpu.clinic_patient_ID
-                LEFT JOIN person_guardians pg ON p.ID = pg.dependent_person_ID
-                LEFT JOIN persons t ON pg.responsible_person_ID = t.ID
-                WHERE cp.clinic_ID = :clinicId 
-                  AND cpu.user_ID = :userId 
-                  AND cp.deleted_at IS NULL
-                ORDER BY cp.created_at DESC LIMIT :limit";
-                  
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindValue(':clinicId', $clinicId, \PDO::PARAM_INT);
-        $stmt->bindValue(':userId', $userId, \PDO::PARAM_INT);
-        $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
-        $stmt->execute();
+        return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
-    
-    return $stmt->fetchAll(\PDO::FETCH_ASSOC);
-}
 }

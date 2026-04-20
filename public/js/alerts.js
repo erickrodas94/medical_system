@@ -38,7 +38,7 @@ function confirmation_page_change(urlBase, location, title, message) {
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
         cancelButtonColor: '#64748b',
-        confirmButtonText: i18n.confirm_btn, // Usamos el diccionario JS
+        confirmButtonText: i18n.confirm_logout_btn, // Usamos el diccionario JS
         cancelButtonText: i18n.cancel_btn,    // Usamos el diccionario JS
 
         heightAuto: false,        // Evita que rompa el h-screen
@@ -60,7 +60,7 @@ function confirmation_page_change(urlBase, location, title, message) {
 //         showCancelButton: true,
 //         confirmButtonColor: '#ef4444',
 //         cancelButtonColor: '#64748b',
-//         confirmButtonText: i18n.confirm_btn, // Usamos el diccionario JS
+//         confirmButtonText: i18n.confirm_logout_btn, // Usamos el diccionario JS
 //         cancelButtonText: i18n.cancel_btn    // Usamos el diccionario JS
 //     }).then((result) => {
 //         if (result.isConfirmed) {

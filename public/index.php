@@ -34,6 +34,19 @@ $router->post('pacientes/guardar', 'PatientController@store');
 $router->get('pacientes/buscar', 'PatientController@search');
 $router->get('pacientes/ver/{id}', 'PatientController@show');
 
+// Edición de Datos Maestros
+$router->get('pacientes/editar/{id}', 'PatientController@edit');
+$router->post('pacientes/actualizar', 'PatientController@update');
+
+// Rutas de Casos Clínicos
+$router->post('pacientes/caso/guardar', 'PatientController@storeCase');
+$router->post('pacientes/triage/guardar', 'PatientController@storeTriage');
+$router->post('pacientes/evolucion/guardar', 'PatientController@storeEvolution');
+$router->post('pacientes/receta/guardar', 'PatientController@storePrescription');
+
+// Flujo Unificado de Consulta (Modo Enfoque)
+$router->get('pacientes/consulta/{id}', 'PatientController@newConsultation');
+$router->post('pacientes/consulta/guardar', 'PatientController@storeConsultation');
 
 // Arrancar el sistema
 $router->run();

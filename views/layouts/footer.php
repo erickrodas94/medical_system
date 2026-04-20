@@ -6,7 +6,7 @@
         const i18n = {
             logout_title: '<?= __('logout_title') ?>',
             logout_confirm: '<?= __('logout_confirm') ?>',
-            confirm_btn: '<?= __('confirm_btn') ?>',
+            confirm_logout_btn: '<?= __('confirm_logout_btn') ?>',
             cancel_btn: '<?= __('cancel_btn') ?>'
         };
     </script>
