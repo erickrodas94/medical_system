@@ -27,8 +27,8 @@
                 <div class="border <?= $ev['status'] === 'Finalized' ? 'border-slate-200 bg-white' : 'border-amber-300 bg-amber-50' ?> rounded-xl p-5 hover:shadow-md transition-shadow relative overflow-hidden">
                     
                     <?php if($ev['status'] === 'Draft'): ?>
-                        <div class="absolute top-0 right-0 bg-amber-400 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-lg shadow-sm">
-                            <?= __('draft') ?? 'Borrador' ?>
+                        <div class="absolute top-0 right-0 bg-amber-400 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-2 rounded-bl-lg shadow-sm">
+                            <?= __('Draft') ?? 'Borrador' ?>
                         </div>
                     <?php endif; ?>
 

@@ -2,6 +2,61 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+        // Monitor de Conexión
+        function updateOnlineStatus() {
+            const statusDisplay = document.getElementById('connection-status-toast');
+            const submitButtons = document.querySelectorAll('button[type="submit"]');
+
+            if (navigator.onLine) {
+                // Hay internet
+                if (statusDisplay) statusDisplay.classList.add('hidden');
+                submitButtons.forEach(btn => btn.disabled = false);
+            } else {
+                // NO hay internet
+                showOfflineAlert();
+                submitButtons.forEach(btn => btn.disabled = true);
+            }
+        }
+
+        function showOfflineAlert() {
+            // Creamos un aviso visual si no existe
+            let alertDiv = document.getElementById('connection-status-toast');
+            if (!alertDiv) {
+                alertDiv = document.createElement('div');
+                alertDiv.id = 'connection-status-toast';
+                alertDiv.className = "fixed bottom-5 left-1/2 -translate-x-1/2 z-[100] bg-rose-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce";
+                alertDiv.innerHTML = `
+                    <i data-lucide="wifi-off"></i>
+                    <span class="font-bold">Sin conexión a Internet. Guardado deshabilitado.</span>
+                `;
+                document.body.appendChild(alertDiv);
+                lucide.createIcons(); // Re-renderizar iconos
+            }
+            alertDiv.classList.remove('hidden');
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!navigator.onLine) {
+                    e.preventDefault();
+                    alert("No puedes guardar cambios sin conexión a internet. Verifica tu red.");
+                } else {
+                    // Opcional: Mostrar un loader para que el usuario sepa que se está procesando
+                    const btn = this.querySelector('button[type="submit"]');
+                    if(btn) {
+                        btn.innerHTML = '<i class="animate-spin mr-2" data-lucide="loader-2"></i> Procesando...';
+                        btn.classList.add('opacity-70', 'cursor-not-allowed');
+                        lucide.createIcons();
+                    }
+                }
+            });
+        });
+    </script>
+
+    <script>
         // Creamos un diccionario global de traducciones para JavaScript
         const i18n = {
             logout_title: '<?= __('logout_title') ?>',

@@ -79,11 +79,11 @@ class Patient {
         $sqlInsert = "INSERT INTO persons (
                         identity_type_ID, identity_number, first_name, last_name, 
                         birth_date, gender, primary_email, primary_cellphone, 
-                        requires_tutor, country_ID, state_ID, city_ID
+                        requires_tutor, country_ID, state_ID
                     ) VALUES (
                         :type_id, :id_num, :fname, :lname, 
                         :bdate, :gender, :email, :phone, 
-                        :req_tutor, :country_id, :state_id, :city_id
+                        :req_tutor, :country_id, :state_id
                     )";
         $stmtInsert = $this->db->prepare($sqlInsert);
         $stmtInsert->execute([
@@ -97,8 +97,7 @@ class Patient {
             'phone'      => !empty($pData['primary_cellphone']) ? trim($pData['primary_cellphone']) : null,
             'req_tutor'  => $pData['requires_tutor'] ?? 0,
             'country_id' => $pData['country_ID'] ?? null,
-            'state_id'   => $pData['state_ID'] ?? null,
-            'city_id'    => $pData['city_ID'] ?? null
+            'state_id'   => $pData['state_ID'] ?? null
         ]);
         
         return $this->db->lastInsertId();
@@ -118,7 +117,6 @@ class Patient {
             // Si no vienen en el form, usamos 1 por defecto para no violar el NOT NULL
             // ==========================================
             $stateId = !empty($data['state_ID']) ? $data['state_ID'] : 1;
-            $cityId  = !empty($data['city_ID']) ? $data['city_ID'] : 1;
 
             // ==========================================
             // PASO 0: VALIDACIÓN TÉCNICA DE IDENTIDAD (Regex)
@@ -144,8 +142,7 @@ class Patient {
                 'gender'            => $data['gender'] ?? null,
                 'requires_tutor'    => $data['requires_tutor'],
                 'country_ID'        => $data['country_ID'],
-                'state_ID'          => $stateId, // <-- Ahora es 1 si viene vacío
-                'city_ID'           => $cityId   // <-- Ahora es 1 si viene vacío
+                'state_ID'          => $stateId
             ]);
 
             // Verificar si YA está en esta clínica
@@ -215,8 +212,7 @@ class Patient {
                     'primary_cellphone' => $data['tutor_phone'] ?? null,
                     
                     'country_ID'        => $data['tutor_country_ID'], 
-                    'state_ID'          => $stateId, // <-- Ahora es 1 si viene vacío
-                    'city_ID'           => $cityId   // <-- Ahora es 1 si viene vacío
+                    'state_ID'          => $stateId
                 ]);
 
                 // Verificar que no exista ya el vínculo Guardián-Paciente
@@ -242,6 +238,62 @@ class Patient {
             if ($this->db->inTransaction()) {
                 $this->db->rollBack();
             }
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Actualiza los datos maestros de una persona (Paciente)
+     */
+    public function update($data) {
+        try {
+            $sql = "UPDATE persons 
+                    SET first_name = :fname, 
+                        last_name = :lname, 
+                        gender = :gender,
+                        marital_status = :marital,
+                        ethnicity = :ethnicity,
+                        religion = :religion,
+                        primary_cellphone = :phone1,
+                        landline_phone = :landline,
+                        primary_email = :email,
+                        country_ID = :country_id,
+                        state_ID = :state_id,
+                        postal_code = :postal,
+                        address_line1 = :address1,
+                        address_line2 = :address2,
+                        blood_type = :blood_type, 
+                        emergency_contact_name = :e_name,
+                        emergency_contact_phone = :e_phone,
+                        emergency_contact_relationship = :e_rel,
+                        critical_medical_alert = :alert
+                    WHERE ID = :person_id";
+                    
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                'fname'      => trim($data['first_name'] ?? ''),
+                'lname'      => trim($data['last_name'] ?? ''),
+                'gender'     => $data['gender'] ?? null,
+                'marital'    => $data['marital_status'] ?? 'Single',
+                'ethnicity'  => $data['ethnicity'] ?? null,
+                'religion'   => $data['religion'] ?? null,
+                'phone1'     => trim($data['primary_cellphone'] ?? ''),
+                'landline'   => trim($data['landline_phone'] ?? ''),
+                'email'      => trim($data['primary_email'] ?? ''),
+                'country_id' => !empty($data['country_ID']) ? $data['country_ID'] : null,
+                'state_id'   => !empty($data['state_ID']) ? $data['state_ID'] : null,
+                'postal'     => trim($data['postal_code'] ?? ''),
+                'address1'   => trim($data['address_line1'] ?? ''),
+                'address2'   => trim($data['address_line2'] ?? ''),
+                'blood_type' => $data['blood_type'] ?? 'Unknown',
+                'e_name'     => trim($data['emergency_contact_name'] ?? ''),
+                'e_phone'    => trim($data['emergency_contact_phone'] ?? ''),
+                'e_rel'      => $data['emergency_contact_relationship'] ?: null,
+                'alert'      => trim($data['critical_medical_alert'] ?? ''),
+                'person_id'  => $data['person_id']
+            ]);
+            return ['success' => true];
+        } catch (\Exception $e) {
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
@@ -354,12 +406,18 @@ class Patient {
                        it.label_key as identity_type_label,
                        t.first_name as tutor_fname, t.last_name as tutor_lname, 
                        t.primary_cellphone as tutor_phone, pg.relationship as tutor_relation,
-                       t.identity_number as tutor_identity
+                       tit.label_key as tutor_identity_type_label,
+                       t.identity_number as tutor_identity,
+                       co.iso_code as country_name,
+                       st.name as state_name
                 FROM clinic_patients cp
                 INNER JOIN persons p ON cp.person_ID = p.ID
                 LEFT JOIN identity_types it ON p.identity_type_ID = it.ID
                 LEFT JOIN person_guardians pg ON p.ID = pg.dependent_person_ID
-                LEFT JOIN persons t ON pg.responsible_person_ID = t.ID ";
+                LEFT JOIN persons t ON pg.responsible_person_ID = t.ID 
+                LEFT JOIN identity_types tit ON t.identity_type_ID = tit.ID
+                LEFT JOIN countries co ON p.country_ID = co.ID
+                LEFT JOIN states st ON p.state_ID = st.ID";
         
         // Si no es admin, obligamos a que exista un registro en clinic_patient_users
         if (!$canSeeAll) {

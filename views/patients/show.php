@@ -1,7 +1,7 @@
 <?php include '../views/layouts/header.php'; ?>
 <?php include '../views/layouts/sidebar.php'; ?>
 
-<div class="flex-1 flex flex-col h-full overflow-hidden">
+<div class="flex-1 flex flex-col h-full overflow-auto">
     <?php include '../views/layouts/topbar.php'; ?>
     
     <main class="p-4 md:p-6 bg-slate-50 min-h-screen">

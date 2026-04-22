@@ -65,7 +65,6 @@ class AuthController {
             'logo_path' => $clinic['logo_path'],
             'country_id' => $clinic['country_ID'],
             'state_id' => $clinic['state_ID'],
-            'city_id' => $clinic['city_ID'],
             'storage_limit_gb' => $clinic['storage_limit_gb'],
             'storage_used_bytes' => $clinic['storage_used_bytes'],
             'timezone' => $clinic['timezone'],

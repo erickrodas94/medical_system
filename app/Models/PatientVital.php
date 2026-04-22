@@ -14,46 +14,38 @@ class PatientVital {
      */
     public function create($data) {
         try {
-            $sql = "INSERT INTO patient_vitals (
-                        clinic_ID, patient_ID, case_ID, taken_by_user_ID,
-                        blood_pressure_sys, blood_pressure_dia, heart_rate, 
-                        oxygen_saturation, temperature_value, temperature_unit,
+            $sql = "INSERT INTO clinic_triage (
+                        person_ID, evolution_ID, created_by_user_ID,
                         weight_value, weight_unit, height_value, height_unit,
-                        clinical_notes
+                        temperature_value, temperature_unit,
+                        systolic_bp, diastolic_bp, heart_rate_bpm, 
+                        respiratory_rate_rpm, oxygen_saturation_pct
                     ) VALUES (
-                        :clinic_id, :patient_id, :case_id, :user_id,
-                        :bp_sys, :bp_dia, :hr, :spo2,
-                        :temp_val, :temp_unit, :weight_val, :weight_unit,
-                        :height_val, :height_unit, :notes
+                        :person_id, :evolution_id, :user_id,
+                        :weight_val, :weight_unit, :height_val, :height_unit,
+                        :temp_val, :temp_unit,
+                        :sys, :dia, :hr, :rr, :spo2
                     )";
                     
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
-                'clinic_id'   => $data['clinic_id'],
-                'patient_id'  => $data['patient_id'],
-                'case_id'     => $data['case_id'],
-                'user_id'     => $data['user_id'],
-                
-                // Usamos null si vienen vacíos del formulario
-                'bp_sys'      => !empty($data['bp_sys']) ? $data['bp_sys'] : null,
-                'bp_dia'      => !empty($data['bp_dia']) ? $data['bp_dia'] : null,
-                'hr'          => !empty($data['heart_rate']) ? $data['heart_rate'] : null,
-                'spo2'        => !empty($data['oxygen_saturation']) ? $data['oxygen_saturation'] : null,
-                
-                'temp_val'    => !empty($data['temperature_value']) ? $data['temperature_value'] : null,
-                'temp_unit'   => $data['temperature_unit'],
-                
-                'weight_val'  => !empty($data['weight_value']) ? $data['weight_value'] : null,
-                'weight_unit' => $data['weight_unit'],
-                
-                'height_val'  => !empty($data['height_value']) ? $data['height_value'] : null,
-                'height_unit' => $data['height_unit'],
-                
-                'notes'       => trim($data['clinical_notes'])
+                'person_id'    => $data['person_id'], // Este debe ser el clinic_patient_ID 
+                'evolution_id' => $data['evolution_id'] ?? null,
+                'user_id'      => $data['user_id'],
+                'weight_val'   => !empty($data['weight_value']) ? $data['weight_value'] : null,
+                'weight_unit'  => $data['weight_unit'] ?? 'kg',
+                'height_val'   => !empty($data['height_value']) ? $data['height_value'] : null,
+                'height_unit'  => $data['height_unit'] ?? 'cm',
+                'temp_val'     => !empty($data['temperature_value']) ? $data['temperature_value'] : null,
+                'temp_unit'    => $data['temperature_unit'] ?? 'C',
+                'sys'          => !empty($data['systolic_bp']) ? $data['systolic_bp'] : null,
+                'dia'          => !empty($data['diastolic_bp']) ? $data['diastolic_bp'] : null,
+                'hr'           => !empty($data['heart_rate_bpm']) ? $data['heart_rate_bpm'] : null,
+                'rr'           => !empty($data['respiratory_rate_rpm']) ? $data['respiratory_rate_rpm'] : null,
+                'spo2'         => !empty($data['oxygen_saturation_pct']) ? $data['oxygen_saturation_pct'] : null
             ]);
             
             return ['success' => true];
-            
         } catch (\Exception $e) {
             return ['success' => false, 'error' => $e->getMessage()];
         }

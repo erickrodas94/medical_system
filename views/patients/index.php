@@ -120,13 +120,14 @@
                 
                 <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4"><?= __('section_personal_data') ?></h4>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                    <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
-
+                    <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1"><?= __('modal_patient_country') ?></label>
                             <select name="country_ID" id="patient_country_ID" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white text-sm" onchange="loadIdentityTypes(this.value, 'identity_type_ID')">
                                 <?php foreach($countries as $c): ?>
-                                    <option value="<?= $c['ID'] ?>" <?= $c['ID'] == 1 ? 'selected' : '' ?>><?= __($c['iso_code']) ?></option>
+                                    <option value="<?= $c['ID'] ?>" <?= ($clinicCountryId == $c['ID']) ? 'selected' : '' ?>>
+                                        <?= __($c['iso_code']) ?>
+                                    </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -134,10 +135,6 @@
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1"><?= __('lbl_identity_type') ?></label>
                             <select name="identity_type_ID" id="identity_type_ID" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white text-sm">
-                                <?php 
-                                    // DEBUG TEMPORAL: Borra esta línea después de probar
-                                    // var_dump($identityTypes); 
-                                ?>
                                 <?php if(!empty($identityTypes)): ?>
                                     <?php foreach($identityTypes as $type): ?>
                                         <option value="<?= $type['ID'] ?>" 
@@ -195,7 +192,6 @@
                     
                     <input type="hidden" name="country_ID" value="1"> 
                     <input type="hidden" name="state_ID" value="1">
-                    <input type="hidden" name="city_ID" value="1">
                 </div>
 
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
@@ -299,9 +295,10 @@
 </div>
 
 <script>
+    const urlBase = '<?= URL_BASE ?>';
+
     document.addEventListener('DOMContentLoaded', function() {
         // --- 1. VARIABLES GLOBALES DE LA VISTA ---
-        const urlBase = '<?= URL_BASE ?>';
         const tbody = document.querySelector('#patientsTable tbody');
         const searchInput = document.getElementById('searchPatientInput');
         let searchTimeout;
@@ -506,7 +503,8 @@
                     // Aquí usamos el label_key (ej. 'lbl_dpi'). 
                     // Si tienes las traducciones expuestas en JS, podrías traducirlo aquí.
                     // Si no, mostrará el nombre técnico o puedes ajustar PHP para que devuelva la palabra ya traducida.
-                    opt.textContent = type.label_key; 
+                    // Antes: opt.textContent = type.label_key;
+                    opt.textContent = type.label_translated;
                     
                     // ¡Vital para tu validación Frontend!
                     opt.setAttribute('data-regex', type.validation_regex);

@@ -37,51 +37,57 @@
                     <h3 class="font-bold text-emerald-900"><?= __('vital_signs') ?></h3>
                 </div>
                 <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                    
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5"><?= __('blood_pressure') ?></label>
-                        <div class="flex items-center gap-2 shadow-sm rounded-lg">
-                            <input type="number" name="systolic_bp" placeholder="120" class="w-full border-slate-300 rounded-lg text-sm text-center focus:ring-emerald-500 focus:border-emerald-500 shadow-sm">
-                            <span class="text-slate-400 font-medium">/</span>
-                            <input type="number" name="diastolic_bp" placeholder="80" class="w-full border-slate-300 rounded-lg text-sm text-center focus:ring-emerald-500 focus:border-emerald-500 shadow-sm">
+                    <div class="space-y-1.5">
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide"><?= __('blood_pressure') ?> (mmHg)</label>
+                        <div class="flex items-center gap-1">
+                            <input type="number" name="systolic" placeholder="120" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-center focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <span class="text-slate-400 font-bold">/</span>
+                            <input type="number" name="diastolic" placeholder="80" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-center focus:ring-2 focus:ring-emerald-500 outline-none">
                         </div>
                     </div>
-                    
+
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5"><?= __('weight') ?></label>
-                        <div class="flex shadow-sm rounded-lg">
-                            <input type="number" step="0.1" name="weight_value" placeholder="0.0" class="w-full border-slate-300 border-r-0 rounded-l-lg text-sm focus:z-10 focus:ring-emerald-500 focus:border-emerald-500">
-                            <select name="weight_unit" class="border-slate-300 rounded-r-lg text-sm bg-slate-50 text-slate-600 focus:z-10 focus:ring-emerald-500 focus:border-emerald-500 py-2 pl-3 pr-8">
-                                <option value="kg" selected><?= __('kg') ?></option>
-                                <option value="lb"><?= __('lb') ?></option>
-                            </select>
-                        </div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5"><?= __('heart_rate') ?> (LPM)</label>
+                        <input type="number" name="heart_rate" placeholder="70" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
                     </div>
-                    
+
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5"><?= __('height') ?></label>
-                        <div class="flex shadow-sm rounded-lg">
-                            <input type="number" step="0.1" name="height_value" placeholder="0.0" class="w-full border-slate-300 border-r-0 rounded-l-lg text-sm focus:z-10 focus:ring-emerald-500 focus:border-emerald-500">
-                            <select name="height_unit" class="border-slate-300 rounded-r-lg text-sm bg-slate-50 text-slate-600 focus:z-10 focus:ring-emerald-500 focus:border-emerald-500 py-2 pl-3 pr-8">
-                                <option value="cm" selected><?= __('cm') ?></option>
-                                <option value="mt"><?= __('m') ?></option>
-                                <option value="in"><?= __('in') ?></option>
-                                <option value="ft"><?= __('ft') ?></option>
-                            </select>
-                        </div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5"><?= __('spo2') ?> (%)</label>
+                        <input type="number" name="spo2" placeholder="98" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
                     </div>
-                    
+
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5"><?= __('temperature') ?></label>
                         <div class="flex shadow-sm rounded-lg">
-                            <input type="number" step="0.1" name="temperature_value" placeholder="37.0" class="w-full border-slate-300 border-r-0 rounded-l-lg text-sm focus:z-10 focus:ring-emerald-500 focus:border-emerald-500">
-                            <select name="temperature_unit" class="border-slate-300 rounded-r-lg text-sm bg-slate-50 text-slate-600 focus:z-10 focus:ring-emerald-500 focus:border-emerald-500 py-2 pl-3 pr-8">
-                                <option value="C" selected><?= __('C') ?></option>
-                                <option value="F"><?= __('F') ?></option>
+                            <input type="number" step="0.1" name="temperature_value" placeholder="37.0" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            <select name="temperature_unit" class="border-slate-300 px-3 py-2 rounded-r-lg text-sm bg-slate-50">
+                                <option value="C" selected>°C</option>
+                                <option value="F">°F</option>
                             </select>
                         </div>
                     </div>
-                    
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5"><?= __('weight') ?></label>
+                        <div class="flex shadow-sm rounded-lg">
+                            <input type="number" step="0.1" name="weight_value" placeholder="0.0" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            <select name="weight_unit" class="border-slate-300 px-3 py-2 rounded-r-lg text-sm bg-slate-50">
+                                <option value="lb" selected>lb</option>
+                                <option value="kg">kg</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5"><?= __('height') ?></label>
+                        <div class="flex shadow-sm rounded-lg">
+                            <input type="number" step="0.1" name="height_value" placeholder="0.0" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            <select name="height_unit" class="border-slate-300 px-3 py-2 rounded-r-lg text-sm bg-slate-50">
+                                <option value="cm" selected>cm</option>
+                                <option value="mt">mt</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -93,16 +99,16 @@
                 <div class="p-5 space-y-5">
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2"><?= __('evolution_notes') ?> <span class="text-rose-500">*</span></label>
-                        <textarea name="evolution_notes" rows="4" required placeholder="<?= __('evolution_notes_placeholder') ?>" class="w-full border-slate-300 rounded-lg text-sm"></textarea>
+                        <textarea name="evolution_notes" rows="4" required placeholder="<?= __('evolution_notes_placeholder') ?>" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></textarea>
                         <p class="text-[11px] text-slate-400 mt-1"><?= __('evolution_notes_help') ?></p>
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2"><?= __('physical_exam_notes') ?></label>
-                        <textarea name="physical_exam_notes" rows="5" placeholder="<?= __('physical_exam_placeholder') ?>" class="w-full border-slate-300 rounded-lg text-sm"></textarea>
+                        <textarea name="physical_exam_notes" rows="5" placeholder="<?= __('physical_exam_placeholder') ?>" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></textarea>
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2"><?= __('patient_instructions') ?></label>
-                        <textarea name="patient_instructions" rows="5" placeholder="<?= __('patient_instructions_placeholder') ?>" class="w-full border-slate-300 rounded-lg text-sm"></textarea>
+                        <textarea name="patient_instructions" rows="5" placeholder="<?= __('patient_instructions_placeholder') ?>" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></textarea>
                     </div>
                 </div>
             </div>
@@ -119,10 +125,10 @@
                         <div class="flex items-center justify-between mb-3">
                             <label class="block text-sm font-bold text-slate-700"><?= __('prescribed_medications') ?></label>
                             <div class="flex gap-2">
-                                <button type="button" onclick="removeLastMedication()" class="p-1.5 bg-rose-50 text-rose-600 rounded hover:bg-rose-100 border border-rose-200 transition-colors">
+                                <button type="button" onclick="removeLastMedication()" class="px-2 py-1 bg-rose-50 text-rose-600 rounded hover:bg-rose-100 border border-rose-200 transition-colors">
                                     <i data-lucide="minus" class="w-4 h-4"></i>
                                 </button>
-                                <button type="button" onclick="addMedication()" class="p-1.5 bg-indigo-50 text-indigo-600 rounded hover:bg-indigo-100 border border-indigo-200 transition-colors">
+                                <button type="button" onclick="addMedication()" class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded hover:bg-indigo-100 border border-indigo-200 transition-colors">
                                     <i data-lucide="plus" class="w-4 h-4"></i>
                                 </button>
                             </div>
@@ -141,7 +147,7 @@
                 <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2"><?= __('assistance_type') ?></label>
-                        <select name="assistance_type" class="w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white text-sm">
+                        <select name="assistance_type" class="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white text-sm">
                             <option value="In-Person"><?= __('In-Person') ?></option>
                             <option value="Video"><?= __('Video') ?></option>
                             <option value="Phone"><?= __('Phone') ?></option>
@@ -154,7 +160,7 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <span class="text-slate-500 font-bold sm:text-sm"><?= $_SESSION['clinic']['currency_iso'] ?? 'GTQ' ?></span>
                             </div>
-                            <input type="number" step="0.01" name="consultation_price" placeholder="0.00" class="w-full pl-14 border-slate-300 rounded-lg text-sm font-bold text-slate-700">
+                            <input type="number" step="0.01" name="consultation_price" placeholder="0.00" class="w-full pl-14 px-3 py-2 border border-slate-300 rounded-lg text-sm font-bold text-slate-700">
                         </div>
                         <p class="text-[11px] text-slate-400 mt-1"><?= __('consultation_fee_help') ?></p>
                     </div>
@@ -179,33 +185,53 @@
         row.className = 'p-4 bg-slate-50 rounded-xl border border-slate-200 med-row mb-3 relative';
         
         row.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-3 mb-3">
                 <div class="md:col-span-2">
                     <label class="text-[10px] font-bold text-slate-500 uppercase"><?= __('medications') ?></label>
-                    <input type="text" name="medications[${medCount}][name]" placeholder="<?= __('medications_placeholder') ?>" class="w-full text-sm border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <input type="text" name="medications[${medCount}][name]" placeholder="<?= __('medications_placeholder') ?>" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-500 uppercase"><?= __('dosage') ?></label>
-                    <input type="text" name="medications[${medCount}][dosage]" placeholder="<?= __('dosage_placeholder') ?>" class="w-full text-sm border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <div class="flex shadow-sm rounded-lg">
+                        <input type="number" name="medications[${medCount}][dosage_val]" class="js-calc-trigger js-dosage w-full px-3 py-2 text-sm border border-slate-300 border-r-0 rounded-l-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="1">
+                        <select name="medications[${medCount}][dosage_unit]" class="border-slate-300 rounded-r-lg text-[10px] bg-slate-50 text-slate-600 px-1">
+                            <option value="tableta"><?= __('tablets') ?></option>
+                            <option value="capsula"><?= __('capsules') ?></option>
+                            <option value="ml"><?= __('ml') ?></option>
+                            <option value="mg"><?= __('mg') ?></option>
+                            <option value="drop"><?= __('drop') ?></option>
+                        </select>
+                    </div>
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-500 uppercase"><?= __('frequency') ?></label>
-                    <input type="text" name="medications[${medCount}][frequency]" placeholder="<?= __('frequency_placeholder') ?>" class="w-full text-sm border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <div class="flex items-center gap-1">
+                        <span class="text-[10px] text-slate-400">c/</span>
+                        <input type="number" name="medications[${medCount}][freq_val]" class="js-calc-trigger js-freq w-full px-2 py-2 text-sm border border-slate-300 rounded-lg text-center" placeholder="8">
+                        <span class="text-[10px] text-slate-400">hrs</span>
+                    </div>
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-500 uppercase"><?= __('duration') ?></label>
-                    <input type="text" name="medications[${medCount}][duration]" placeholder="<?= __('duration_placeholder') ?>" class="w-full text-sm border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <div class="flex shadow-sm rounded-lg">
+                        <input type="number" name="medications[${medCount}][dur_val]" class="js-calc-trigger js-dur w-full px-3 py-2 text-sm border border-slate-300 border-r-0 rounded-l-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="5">
+                        <select name="medications[${medCount}][dur_unit]" class="js-calc-trigger js-dur-unit border-slate-300 rounded-r-lg text-[10px] bg-slate-50 text-slate-600 px-1">
+                            <option value="dias"><?= __('days') ?></option>
+                            <option value="semanas"><?= __('weeks') ?></option>
+                            <option value="meses"><?= __('months') ?></option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-indigo-600 uppercase"><?= __('total_quantity') ?></label>
+                    <input type="text" name="medications[${medCount}][total_quantity]" readonly class="js-total-qty w-full px-3 py-2 text-sm border border-indigo-200 bg-indigo-50 rounded-lg text-center font-bold text-indigo-700" placeholder="Total">
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 uppercase"><?= __('total_quantity') ?></label>
-                    <input type="text" name="medications[${medCount}][total_quantity]" placeholder="<?= __('total_quantity_placeholder') ?>" class="w-full text-sm border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-                <div class="md:col-span-2">
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-3">
+                <div class="md:col-span-1">
                     <label class="text-[10px] font-bold text-slate-500 uppercase"><?= __('additional_notes') ?></label>
-                    <input type="text" name="medications[${medCount}][additional_notes]" placeholder="<?= __('additional_notes_placeholder') ?>" class="w-full text-sm border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <input type="text" name="medications[${medCount}][additional_notes]" placeholder="<?= __('additional_notes_placeholder') ?>" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
             </div>
             
@@ -229,6 +255,29 @@
     document.addEventListener("DOMContentLoaded", function() {
         addMedication();
     });
+
+    document.addEventListener('input', function (e) {
+    if (e.target.classList.contains('js-calc-trigger')) {
+        const container = e.target.closest('.relative'); // O el div que envuelve cada bloque de medicamento
+        
+        const dosage = parseFloat(container.querySelector('.js-dosage').value) || 0;
+        const freq = parseFloat(container.querySelector('.js-freq').value) || 0;
+        const durVal = parseFloat(container.querySelector('.js-dur').value) || 0;
+        const durUnit = container.querySelector('.js-dur-unit').value;
+
+        // Convertir todo a días
+        let days = durVal;
+        if (durUnit === 'semanas') days = durVal * 7;
+
+        if (dosage > 0 && freq > 0 && days > 0) {
+            // Fórmula: (24h / frecuencia) = tomas al día. Luego * dosis * días.
+            const tomasAlDia = 24 / freq;
+            const total = Math.ceil(tomasAlDia * dosage * days);
+            
+            container.querySelector('.js-total-qty').value = total;
+        }
+    }
+});
 </script>
 
 <?php include '../views/layouts/footer.php'; ?>

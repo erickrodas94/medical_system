@@ -19,6 +19,9 @@ $router = new Router($pdo);
 // Rutas del Sistema / AJAX
 $router->get('documentos/por-pais', 'SystemController@getIdentityTypesByCountry');
 
+// --- ENDPOINTS PARA API (GEOGRAFÍA DINÁMICA) ---
+$router->get('api/states', 'ApiController@getStates');
+
 // Rutas de Autenticación
 $router->get('login', 'AuthController@showLogin');
 $router->post('login', 'AuthController@login');

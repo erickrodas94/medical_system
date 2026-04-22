@@ -27,6 +27,12 @@ class SystemController {
         if ($countryId > 0) {
             $identityModel = new IdentityType($this->db);
             $types = $identityModel->getByCountry($countryId);
+
+            // Traducimos cada tipo antes de enviarlo
+            foreach ($types as &$type) {
+                // Reemplazamos la llave por el valor real del diccionario
+                $type['label_translated'] = __($type['label_key']);
+            }
             
             // Devolvemos el array en formato JSON para que JavaScript lo dibuje
             header('Content-Type: application/json; charset=utf-8');
