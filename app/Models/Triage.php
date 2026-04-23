@@ -8,6 +8,23 @@ class Triage {
         $this->db = $dbConnection;
     }
 
+    // =======================================
+    // SELECT DATA
+    // =======================================
+    
+    public function getVitalsHistory($personId) {
+        $sql = "SELECT taken_at, systolic_bp, diastolic_bp, heart_rate_bpm, weight_value, temperature_value
+                FROM clinic_triage
+                WHERE person_ID = :person_id
+                ORDER BY taken_at ASC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':person_id' => $personId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    // =======================================
+    // INSERT DATA
+    // =======================================
     public function create($data) {
         try {
             $sql = "INSERT INTO clinic_triage (

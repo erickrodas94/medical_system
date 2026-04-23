@@ -87,14 +87,11 @@
                 
                 <div class="pt-4 pb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4"><?= __('clinical_data') ?></div>
 
-                <button onclick="switchTab('tab-evolutions')" id="btn-tab-evolutions" class="tab-btn w-full flex items-center px-4 py-3 bg-white border border-slate-100 text-slate-500 hover:bg-slate-50 hover:text-slate-700 rounded-xl font-semibold transition-all shadow-sm <?= !$activeCaseId ? 'opacity-60' : '' ?>">
-                    <i data-lucide="activity" class="w-5 h-5 mr-3 text-slate-400"></i> <?= __('evolution_soap') ?>
+                <button onclick="switchTab('tab-timeline')" id="btn-tab-timeline" class="tab-btn w-full flex items-center px-4 py-3 bg-white border border-slate-100 text-slate-500 hover:bg-slate-50 hover:text-slate-700 rounded-xl font-semibold transition-all shadow-sm <?= !$activeCaseId ? 'opacity-60' : '' ?>">
+                    <i data-lucide="activity" class="w-5 h-5 mr-3 text-slate-400"></i> Historial Clínico
                 </button>
-                <button onclick="switchTab('tab-vitals')" id="btn-tab-vitals" class="tab-btn w-full flex items-center px-4 py-3 bg-white border border-slate-100 text-slate-500 hover:bg-slate-50 hover:text-slate-700 rounded-xl font-semibold transition-all shadow-sm <?= !$activeCaseId ? 'opacity-60' : '' ?>">
-                    <i data-lucide="thermometer" class="w-5 h-5 mr-3 text-slate-400"></i> <?= __('vital_signs') ?>
-                </button>
-                <button onclick="switchTab('tab-prescriptions')" id="btn-tab-prescriptions" class="tab-btn w-full flex items-center px-4 py-3 bg-white border border-slate-100 text-slate-500 hover:bg-slate-50 hover:text-slate-700 rounded-xl font-semibold transition-all shadow-sm <?= !$activeCaseId ? 'opacity-60' : '' ?>">
-                    <i data-lucide="file-text" class="w-5 h-5 mr-3 text-slate-400"></i> <?= __('prescriptions_plans') ?>
+                <button onclick="switchTab('tab-trends')" id="btn-tab-trends" class="tab-btn w-full flex items-center px-4 py-3 bg-white border border-slate-100 text-slate-500 hover:bg-slate-50 hover:text-slate-700 rounded-xl font-semibold transition-all shadow-sm">
+                    <i data-lucide="line-chart" class="w-5 h-5 mr-3 text-slate-400"></i> Gráficas Vitales
                 </button>
             </div>
 
@@ -109,19 +106,7 @@
                         <?php include 'tabs/background_list.php'; ?>
                     </div>
                     
-                    <div id="tab-evolutions" class="tab-content hidden">
-                        <?php if(!$activeCaseId): ?>
-                            <div class="text-center py-16">
-                                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
-                                    <i data-lucide="folder-search" class="w-8 h-8 text-slate-300"></i>
-                                </div>
-                                <h3 class="text-lg font-bold text-slate-700 mb-1">Sin Caso Activo</h3>
-                                <p class="text-slate-400 italic"><?= __('no_active_case') ?></p>
-                            </div>
-                        <?php else: include 'tabs/evolutions_list.php'; endif; ?>
-                    </div>
-
-                    <div id="tab-vitals" class="tab-content hidden space-y-6">
+                    <div id="tab-timeline" class="tab-content hidden">
                         <?php if(!$activeCaseId): ?>
                             <div class="text-center py-16">
                                 <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
@@ -131,30 +116,180 @@
                                 <p class="text-slate-400 italic"><?= __('no_active_case') ?></p>
                             </div>
                         <?php else: ?>
-                            <div class="flex justify-between items-center border-b border-slate-100 pb-4">
-                                <h3 class="text-lg font-bold text-slate-800"><?= __('vital_signs') ?></h3>
-                                <button onclick="document.getElementById('modalTriage').classList.remove('hidden')" class="text-sm font-bold text-emerald-600 hover:text-emerald-700 flex items-center bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors shadow-sm border border-emerald-100 hover:bg-emerald-100">
-                                    <i data-lucide="plus" class="w-4 h-4 mr-1"></i> Registrar Signos
-                                </button>
-                            </div>
-                            <div class="text-center py-10"><p class="text-slate-400 italic"><?= __('vital_signs_history') ?></p></div>
-                        <?php endif; ?>
-                    </div>
-
-                    <div id="tab-prescriptions" class="tab-content hidden space-y-6">
-                        <?php if(!$activeCaseId): ?>
-                            <div class="text-center py-16">
-                                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
-                                    <i data-lucide="folder-search" class="w-8 h-8 text-slate-300"></i>
+                            
+                            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-4 items-center justify-between mb-8">
+                                <div class="flex gap-2">
+                                    <button onclick="filterTimeline('all', this)" class="filter-btn bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-md">TODO</button>
+                                    <button onclick="filterTimeline('evolution', this)" class="filter-btn bg-white border border-slate-300 text-slate-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-100 transition-all">EVOLUCIONES</button>
+                                    <button onclick="filterTimeline('vitals', this)" class="filter-btn bg-white border border-slate-300 text-slate-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-100 transition-all">SIGNOS</button>
+                                    <button onclick="filterTimeline('prescription', this)" class="filter-btn bg-white border border-slate-300 text-slate-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-100 transition-all">RECETAS</button>
                                 </div>
-                                <h3 class="text-lg font-bold text-slate-700 mb-1">Sin Caso Activo</h3>
-                                <p class="text-slate-400 italic"><?= __('no_active_case') ?></p>
+
+                                <div class="flex items-center gap-3">
+                                    <select id="doctor-filter" onchange="filterByDoctor(this.value)" class="text-xs font-bold border-slate-300 text-slate-600 rounded-lg bg-slate-50 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                                        <option value="all">TODOS LOS DOCTORES</option>
+                                        <?php foreach($doctors as $id => $name): ?>
+                                            <option value="<?= $id ?>">DR. <?= mb_strtoupper($name) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+
+                                    <div class="relative inline-block text-left">
+                                        <button onclick="document.getElementById('register-dropdown').classList.toggle('hidden')" class="flex items-center px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">
+                                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> REGISTRAR
+                                            <i data-lucide="chevron-down" class="w-4 h-4 ml-1.5"></i>
+                                        </button>
+                                        
+                                        <div id="register-dropdown" class="hidden absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
+                                            <a href="<?= URL_BASE ?>pacientes/consulta/<?= $patient['patient_id'] ?>?case_id=<?= $activeCaseId ?>" class="flex items-center px-4 py-3 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                                                <i data-lucide="stethoscope" class="w-4 h-4 mr-3 text-indigo-500"></i> Consulta Completa
+                                            </a>
+                                            <button onclick="document.getElementById('modalNewEvolution').classList.remove('hidden'); document.getElementById('register-dropdown').classList.add('hidden');" class="w-full flex items-center px-4 py-3 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                                                <i data-lucide="file-text" class="w-4 h-4 mr-3 text-blue-500"></i> Solo Evolución
+                                            </button>
+                                            <button onclick="document.getElementById('modalTriage').classList.remove('hidden'); document.getElementById('register-dropdown').classList.add('hidden');" class="w-full flex items-center px-4 py-3 text-sm text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+                                                <i data-lucide="activity" class="w-4 h-4 mr-3 text-emerald-500"></i> Solo Signos
+                                            </button>
+                                            <button onclick="document.getElementById('modalPrescription').classList.remove('hidden'); document.getElementById('register-dropdown').classList.add('hidden');" class="w-full flex items-center px-4 py-3 text-sm text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+                                                <i data-lucide="pill" class="w-4 h-4 mr-3 text-blue-500"></i> Solo Receta
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        <?php else: ?>
-                            <div class="text-center py-10"><p class="text-slate-400 italic">No hay recetas emitidas en este caso.</p></div>
+
+                            <div class="relative pl-8">
+                                <div class="absolute left-[47px] top-0 bottom-0 w-0.5 bg-slate-200"></div>
+
+                                <div class="space-y-8">
+                                    <?php foreach ($timeline as $item): 
+                                        $type = $item['record_type'];
+                                        $colors = [
+                                            'evolution' => ['border' => 'border-l-blue-500', 'bg' => 'bg-blue-100', 'text' => 'text-blue-600', 'icon' => 'file-text', 'label' => 'Evolución'],
+                                            'vitals' => ['border' => 'border-l-emerald-500', 'bg' => 'bg-emerald-100', 'text' => 'text-emerald-600', 'icon' => 'activity', 'label' => 'Signos'],
+                                            'prescription' => ['border' => 'border-l-purple-500', 'bg' => 'bg-purple-100', 'text' => 'text-purple-600', 'icon' => 'pill', 'label' => 'Receta']
+                                        ][$type];
+                                    ?>
+                                        <div class="timeline-item relative pl-8" data-type="<?= $type ?>" data-doctor="<?= $item['doctor_id'] ?>">
+                                            <div class="absolute -left-[10px] top-4 w-8 h-8 rounded-full flex items-center justify-center border-4 border-white shadow-sm z-10 <?= $colors['bg'] ?> <?= $colors['text'] ?>">
+                                                <i data-lucide="<?= $colors['icon'] ?>" class="w-3.5 h-3.5"></i>
+                                            </div>
+
+                                            <div class="bg-white rounded-xl border border-slate-200 <?= $colors['border'] ?> border-l-4 shadow-sm overflow-hidden">
+                                                <div class="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><?= date('d M Y, H:i', strtotime($item['created_at'])) ?></span>
+                                                    <span class="text-xs font-bold text-slate-600">Dr. <?= htmlspecialchars($item['doctor_full_name']) ?></span>
+                                                </div>
+                                                
+                                                <div class="p-5">
+                                                    <?php if($type === 'vitals'): ?>
+                                                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                            <?php 
+                                                                $parts = explode('|', $item['main_content']);
+                                                                foreach($parts as $p): $d = explode(':', $p);
+                                                            ?>
+                                                                <div class="bg-emerald-50/50 p-2.5 rounded-lg border border-emerald-100 text-center">
+                                                                    <span class="block text-[9px] font-bold text-emerald-600 uppercase mb-0.5"><?= $d[0] ?></span>
+                                                                    <span class="text-sm font-bold text-slate-700"><?= $d[1] ?></span>
+                                                                </div>
+                                                            <?php endforeach; ?>
+                                                        </div>
+
+                                                    <?php elseif($type === 'evolution'): ?>
+                                                        <p class="text-sm text-slate-700 leading-relaxed mb-4"><?= nl2br(htmlspecialchars($item['main_content'])) ?></p>
+                                                        <?php if($item['sub_content']): ?>
+                                                            <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-l-slate-300">
+                                                                <h5 class="text-[10px] font-bold text-slate-500 uppercase mb-2">Examen Físico</h5>
+                                                                <p class="text-sm text-slate-600 italic"><?= nl2br(htmlspecialchars($item['sub_content'])) ?></p>
+                                                            </div>
+                                                        <?php endif; ?>
+
+                                                    <?php elseif($type === 'prescription'): ?>
+                                                        <div class="space-y-3 mb-5">
+                                                            <?php 
+                                                            if (!empty($item['main_content'])) {
+                                                                // Separamos cada medicamento
+                                                                $medications = explode('||', $item['main_content']);
+                                                                
+                                                                foreach($medications as $medStr): 
+                                                                    // Separamos los detalles del medicamento
+                                                                    $medData = explode('::', $medStr);
+                                                                    // [0]=Nombre, [1]=Dosis, [2]=Frecuencia, [3]=Duración, [4]=Total
+                                                                    
+                                                                    if(empty(trim($medData[0]))) continue;
+                                                            ?>
+                                                                <div class="bg-purple-50/40 border border-purple-100 rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-sm hover:shadow-md transition-all">
+                                                                    <div class="flex items-start gap-3">
+                                                                        <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
+                                                                            <i data-lucide="pill" class="w-4 h-4"></i>
+                                                                        </div>
+                                                                        <div>
+                                                                            <h6 class="text-sm font-bold text-slate-800"><?= htmlspecialchars($medData[0]) ?></h6>
+                                                                            <div class="text-xs text-slate-600 mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                                                                                <?php if(!empty($medData[1])): ?>
+                                                                                    <span><span class="font-bold text-purple-700 opacity-70">Dosis:</span> <?= htmlspecialchars($medData[1]) ?></span>
+                                                                                <?php endif; ?>
+                                                                                
+                                                                                <?php if(!empty($medData[2])): ?>
+                                                                                    <span class="text-slate-300">•</span>
+                                                                                    <span><span class="font-bold text-purple-700 opacity-70">Frec:</span> <?= htmlspecialchars($medData[2]) ?></span>
+                                                                                <?php endif; ?>
+                                                                                
+                                                                                <?php if(!empty($medData[3])): ?>
+                                                                                    <span class="text-slate-300">•</span>
+                                                                                    <span><span class="font-bold text-purple-700 opacity-70">Duración:</span> <?= htmlspecialchars($medData[3]) ?></span>
+                                                                                <?php endif; ?>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <?php if(!empty($medData[4])): ?>
+                                                                    <div class="md:text-right shrink-0 bg-white px-3 py-1.5 rounded-lg border border-purple-50 inline-block md:block self-start">
+                                                                        <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total</span>
+                                                                        <span class="text-sm font-bold text-slate-800"><?= htmlspecialchars($medData[4]) ?></span>
+                                                                    </div>
+                                                                    <?php endif; ?>
+                                                                </div>
+                                                            <?php 
+                                                                endforeach; 
+                                                            } else {
+                                                                echo '<p class="text-sm text-slate-500 italic">No hay medicamentos detallados en esta receta.</p>';
+                                                            }
+                                                            ?>
+                                                        </div>
+
+                                                        <?php if(!empty($item['sub_content'])): ?>
+                                                            <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-l-purple-300 mt-4">
+                                                                <h5 class="flex items-center text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
+                                                                    <i data-lucide="info" class="w-3 h-3 mr-1.5"></i> Instrucciones de Plan
+                                                                </h5>
+                                                                <p class="text-sm text-slate-700 leading-relaxed"><?= nl2br(htmlspecialchars($item['sub_content'])) ?></p>
+                                                            </div>
+                                                        <?php endif; ?>
+
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
                         <?php endif; ?>
                     </div>
 
+                    <div id="tab-trends" class="tab-content hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-bold text-slate-800">Evolución del Paciente</h3>
+                            <div class="flex bg-slate-100 p-1 rounded-lg">
+                                <button onclick="updateChart('bp')" class="chart-btn active-chart px-4 py-1.5 rounded text-xs font-bold bg-white shadow-sm text-indigo-600">Presión Arterial</button>
+                                <button onclick="updateChart('weight')" class="chart-btn px-4 py-1.5 rounded text-xs font-bold text-slate-500 hover:text-slate-700">Peso</button>
+                                <button onclick="updateChart('hr')" class="chart-btn px-4 py-1.5 rounded text-xs font-bold text-slate-500 hover:text-slate-700">F. Cardíaca</button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                            <canvas id="vitalsChart" height="100"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -169,25 +304,139 @@
 </div>
 
 <script>
-function switchTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(el => {
-        el.classList.add('hidden');
-        el.classList.remove('block');
+    // --- TU FUNCIÓN ACTUAL PARA CAMBIAR TABS ---
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => {
+            el.classList.add('hidden');
+            el.classList.remove('block');
+        });
+        
+        document.getElementById(tabId).classList.remove('hidden');
+        document.getElementById(tabId).classList.add('block');
+        
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-100');
+            btn.classList.add('bg-white', 'text-slate-500', 'hover:bg-slate-50', 'border', 'border-slate-100');
+        });
+        
+        const activeBtn = document.getElementById('btn-' + tabId);
+        if(activeBtn) {
+            activeBtn.classList.remove('bg-white', 'text-slate-500', 'hover:bg-slate-50', 'border', 'border-slate-100');
+            activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-100');
+        }
+    }
+
+    // --- NUEVAS FUNCIONES PARA FILTRAR EL TIMELINE ---
+    function filterTimeline(type, btnElement) {
+        // Cambiar estilos de los botones de filtro
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('bg-slate-800', 'text-white');
+            btn.classList.add('bg-white', 'text-slate-600', 'border-slate-300');
+        });
+        
+        btnElement.classList.remove('bg-white', 'text-slate-600', 'border-slate-300');
+        btnElement.classList.add('bg-slate-800', 'text-white');
+
+        const items = document.querySelectorAll('.timeline-item');
+        const doctorFilter = document.getElementById('doctor-filter').value;
+
+        items.forEach(item => {
+            const itemType = item.getAttribute('data-type');
+            const itemDoctor = item.getAttribute('data-doctor');
+            
+            const typeMatch = (type === 'all' || itemType === type);
+            const doctorMatch = (doctorFilter === 'all' || itemDoctor === doctorFilter);
+
+            if (typeMatch && doctorMatch) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    function filterByDoctor(doctorId) {
+        // Al cambiar el doctor, disparamos el filtro respetando la categoría actual
+        const activeFilterBtn = document.querySelector('.filter-btn.bg-indigo-600');
+        let currentType = 'all';
+        
+        if(activeFilterBtn.innerText.includes('EVOLUCIONES')) currentType = 'evolution';
+        if(activeFilterBtn.innerText.includes('SIGNOS')) currentType = 'vitals';
+        if(activeFilterBtn.innerText.includes('RECETAS')) currentType = 'prescription';
+
+        filterTimeline(currentType, activeFilterBtn);
+    }
+    // Cerrar el menú desplegable al hacer clic en cualquier lugar fuera de él
+    document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('register-dropdown');
+        const button = dropdown.previousElementSibling;
+        
+        // Si el clic NO fue en el botón ni dentro del dropdown, ocúltalo
+        if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+            dropdown.classList.add('hidden');
+        }
     });
-    
-    document.getElementById(tabId).classList.remove('hidden');
-    document.getElementById(tabId).classList.add('block');
-    
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-100');
-        btn.classList.add('bg-white', 'text-slate-500', 'hover:bg-slate-50', 'border', 'border-slate-100');
-    });
-    
-    const activeBtn = document.getElementById('btn-' + tabId);
-    activeBtn.classList.remove('bg-white', 'text-slate-500', 'hover:bg-slate-50', 'border', 'border-slate-100');
-    activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-100');
-}
+
+    // 1. Recibimos los datos históricos desde PHP
+    const rawVitalsData = <?= $vitalsJson ?? '[]' ?>;
+
+    // 2. Preparamos las etiquetas (Fechas)
+    const labels = rawVitalsData.map(v => new Date(v.taken_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }));
+
+    // 3. Preparamos los arrays de datos
+    const dataBP_Sys = rawVitalsData.map(v => v.systolic_bp);
+    const dataBP_Dia = rawVitalsData.map(v => v.diastolic_bp);
+    const dataWeight = rawVitalsData.map(v => v.weight_value);
+    const dataHR = rawVitalsData.map(v => v.heart_rate_bpm);
+
+    let vitalsChart; // Variable global para la gráfica
+
+    function initChart() {
+        const ctx = document.getElementById('vitalsChart').getContext('2d');
+        
+        // Configuramos la gráfica inicial (Presión Arterial)
+        vitalsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Sistólica', data: dataBP_Sys, borderColor: '#ef4444', backgroundColor: '#fca5a555', fill: true, tension: 0.4 },
+                    { label: 'Diastólica', data: dataBP_Dia, borderColor: '#3b82f6', backgroundColor: '#93c5fd55', fill: true, tension: 0.4 }
+                ]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    function updateChart(metric) {
+        // Cambiamos el estilo de los botones
+        document.querySelectorAll('.chart-btn').forEach(btn => {
+            btn.classList.remove('bg-white', 'shadow-sm', 'text-indigo-600');
+            btn.classList.add('text-slate-500');
+        });
+        event.target.classList.add('bg-white', 'shadow-sm', 'text-indigo-600');
+        event.target.classList.remove('text-slate-500');
+
+        // Actualizamos los datos de la gráfica
+        if (metric === 'bp') {
+            vitalsChart.data.datasets = [
+                { label: 'Sistólica', data: dataBP_Sys, borderColor: '#ef4444', backgroundColor: '#fca5a555', fill: true, tension: 0.4 },
+                { label: 'Diastólica', data: dataBP_Dia, borderColor: '#3b82f6', backgroundColor: '#93c5fd55', fill: true, tension: 0.4 }
+            ];
+        } else if (metric === 'weight') {
+            vitalsChart.data.datasets = [
+                { label: 'Peso', data: dataWeight, borderColor: '#10b981', backgroundColor: '#6ee7b755', fill: true, tension: 0.4 }
+            ];
+        } else if (metric === 'hr') {
+            vitalsChart.data.datasets = [
+                { label: 'Frecuencia Cardíaca', data: dataHR, borderColor: '#f59e0b', backgroundColor: '#fcd34d55', fill: true, tension: 0.4 }
+            ];
+        }
+        vitalsChart.update();
+    }
+
+    // Inicializar la gráfica cuando la página cargue
+    document.addEventListener('DOMContentLoaded', initChart);
 </script>
 
 <?php include '../views/layouts/footer.php'; ?>
-                    </div>

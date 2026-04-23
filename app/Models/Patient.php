@@ -5,9 +5,73 @@ class Patient {
     
     private $db;
 
+    // =====================================================
+    // CONSULTAS A LAS DIFERENTES TABLAS DE LA BASE DE DATOS
+    // =====================================================
+
+
     // 1. Recibimos la base de datos al crear el Router
     public function __construct($dbConnection = null) {
         $this->db = $dbConnection;
+    }
+
+    // 2. Tabala unificada de consulta del paciente.
+    public function getUnifiedTimeline($personId, $caseId = null) {
+        $params = [':person_id' => $personId];
+        $caseFilter = $caseId ? " AND E.case_ID = :case_id" : "";
+        if ($caseId) $params[':case_id'] = $caseId;
+
+        $sql = "
+            /* 1. Evoluciones */
+            SELECT 'evolution' as record_type, E.ID as record_id, E.created_at, E.evolution_notes as main_content, E.physical_exam_notes as sub_content,
+                    CONCAT(U.first_name, ' ', U.last_name) as doctor_full_name, U.ID as doctor_id, E.case_ID as extra_data
+            FROM clinic_evolutions E JOIN users U ON E.doctor_ID = U.ID
+            WHERE E.person_ID = :person_id $caseFilter
+
+            UNION ALL
+
+            /* 2. Signos Vitales (Dinámico y Completo) */
+            SELECT 'vitals' as record_type, T.ID as record_id, T.taken_at as created_at, CONCAT_WS('|',
+                    IF(T.systolic_bp IS NOT NULL AND T.diastolic_bp IS NOT NULL, CONCAT('P. Arterial:', T.systolic_bp, '/', T.diastolic_bp, ' mmHg'), NULL),
+                    IF(T.heart_rate_bpm IS NOT NULL, CONCAT('F. Cardíaca:', T.heart_rate_bpm, ' lpm'), NULL),
+                    IF(T.oxygen_saturation_pct IS NOT NULL, CONCAT('SpO2:', T.oxygen_saturation_pct, '%'), NULL),
+                    IF(T.temperature_value IS NOT NULL, CONCAT('Temp:', T.temperature_value, '°', T.temperature_unit), NULL),
+                    IF(T.weight_value IS NOT NULL, CONCAT('Peso:', T.weight_value, ' ', T.weight_unit), NULL),
+                    IF(T.height_value IS NOT NULL, CONCAT('Estatura:', T.height_value, ' ', T.height_unit), NULL),
+                    IF(T.bmi_calculated IS NOT NULL, CONCAT('IMC:', T.bmi_calculated), NULL),
+                    IF(T.respiratory_rate_rpm IS NOT NULL, CONCAT('F. Resp:', T.respiratory_rate_rpm, ' rpm'), NULL),
+                    IF(T.glucose_value IS NOT NULL, CONCAT('Glucosa:', T.glucose_value, ' mg/dL'), NULL),
+                    IF(T.head_circumference IS NOT NULL, CONCAT('P. Cefálico:', T.head_circumference, ' ', T.head_circumference_unit), NULL)
+                ) as main_content, NULL as sub_content, CONCAT(U.first_name, ' ', U.last_name) as doctor_full_name, U.ID as doctor_id, NULL as extra_data
+            FROM clinic_triage T JOIN users U ON T.created_by_user_ID = U.ID
+            WHERE T.person_ID = :person_id
+
+            UNION ALL
+
+            /* 3. Recetas (Medicamentos como contenido PRINCIPAL) */
+            SELECT 'prescription' as record_type, P.ID as record_id, P.created_at, 
+                /* Extraemos todos los detalles separados por :: (columnas) y || (filas) */
+                (SELECT GROUP_CONCAT(
+                    CONCAT(
+                        IFNULL(medication_name, ''), '::', 
+                        IFNULL(dosage, ''), '::', 
+                        IFNULL(frequency, ''), '::', 
+                        IFNULL(duration, ''), '::', 
+                        IFNULL(total_quantity, '')
+                    ) SEPARATOR '||'
+                ) 
+                FROM prescription_details 
+                WHERE prescription_ID = P.ID) as main_content,
+                /* Las instrucciones pasan a ser el contenido secundario */
+                P.general_instructions as sub_content, CONCAT(U.first_name, ' ', U.last_name) as doctor_full_name, U.ID as doctor_id, NULL as extra_data
+            FROM evolution_prescriptions P JOIN clinic_evolutions E ON P.evolution_ID = E.ID JOIN users U ON P.doctor_user_ID = U.ID
+            WHERE E.person_ID = :person_id $caseFilter
+
+            ORDER BY created_at DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 
     /**
@@ -101,6 +165,30 @@ class Patient {
         ]);
         
         return $this->db->lastInsertId();
+    }
+
+    /*
+    * Obtiene el historial de crecimiento de un paciente pediátrico
+    */
+    public function getPediatricGrowthHistory($personId) {
+        $sql = "SELECT 
+                    T.taken_at,
+                    T.weight_value, T.weight_unit,
+                    T.height_value, T.height_unit,
+                    T.head_circumference, T.head_circumference_unit,
+                    T.bmi_calculated,
+                    P.birth_date,
+                    P.gender,
+                    /* Cálculo de meses entre nacimiento y toma de datos */
+                    TIMESTAMPDIFF(MONTH, P.birth_date, T.taken_at) as age_months
+                FROM clinic_triage T
+                JOIN persons P ON T.person_ID = P.ID
+                WHERE T.person_ID = :person_id
+                ORDER BY T.taken_at ASC";
+                
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':person_id' => $personId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**

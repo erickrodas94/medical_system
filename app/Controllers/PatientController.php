@@ -95,7 +95,8 @@ class PatientController {
         $caseModel = new ClinicCase($this->db);
         $evolutionModel = new Evolution($this->db);
         $bgModel = new Background($this->db);
-        
+        $triageModel = new Triage($this->db);
+
         $patient = $patientModel->getByIdAndUser($id, $clinicId, $userId, $canSeeAll);
 
         if (!$patient) {
@@ -108,10 +109,50 @@ class PatientController {
         $activeCaseId = isset($_GET['case_id']) ? $_GET['case_id'] : (!empty($cases) ? $cases[0]['ID'] : null);
         $backgroundData = $bgModel->getPatientBackground($patient['ID'], $userId);
 
-        $evolutions = [];
+        // --- CAMBIO AQUÍ: OBTENEMOS LA LÍNEA DE TIEMPO UNIFICADA EN VEZ DE SOLO EVOLUCIONES ---
+        $timeline = [];
+        $doctors = [];
         if ($activeCaseId) {
-            $evolutions = $evolutionModel->getByCase($activeCaseId);
+            // Llamamos a la función unificada pasando el caso activo
+            $timeline = $patientModel->getUnifiedTimeline($patient['ID'], $activeCaseId);
+            
+            // Extraemos los doctores que han participado para el filtro
+            foreach ($timeline as $item) {
+                $doctors[$item['doctor_id']] = $item['doctor_full_name'];
+            }
         }
+        // -------------------------------------------------------------------------------------
+
+        // ========================================
+        // Obtener Historial de Signos Vitales
+        // ========================================
+        $vitalsHistory = $triageModel->getVitalsHistory($patient['ID']);
+        $vitalsJson = json_encode($vitalsHistory);
+
+        $specialty = $_SESSION['user']['specialty'] ?? '';
+        $pediatricData = [];
+
+        if ($specialty === 'specialty_pediatrics') {
+            $patientModel = new Patient($this->db);
+            $rawHistory = $patientModel->getPediatricGrowthHistory($id);
+            
+            // Normalizamos los datos a kg y cm para comparar con la OMS
+            foreach ($rawHistory as $row) {
+                $weight = ($row['weight_unit'] === 'lb') ? $row['weight_value'] * 0.453592 : $row['weight_value'];
+                $height = ($row['height_unit'] === 'mt') ? $row['height_value'] * 100 : $row['height_value'];
+                $head = ($row['head_circumference_unit'] === 'in') ? $row['head_circumference'] * 2.54 : $row['head_circumference'];
+                
+                $pediatricData[] = [
+                    'x' => $row['age_months'],
+                    'weight' => round($weight, 2),
+                    'height' => round($height, 2),
+                    'head'   => round($head, 2),
+                    'gender' => $row['gender']
+                ];
+            }
+        }
+
+        $pediatricJson = json_encode($pediatricData);
 
         require_once '../views/patients/show.php';
     }

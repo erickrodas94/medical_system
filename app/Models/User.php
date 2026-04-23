@@ -18,8 +18,10 @@ class User {
     public function findByEmailAndClinic($email, $clinicId) {
         $sql = "SELECT u.*, 
                    r.name as role_name, 
-                   r.permissions as role_permissions 
+                   r.permissions as role_permissions,
+                   s.name_key as specialty_name_key
             FROM users u
+            LEFT JOIN specialties s ON u.specialty_ID = s.ID
             INNER JOIN roles r ON u.role_ID = r.ID
             WHERE u.email = :email 
               AND u.clinic_ID = :clinicId 
