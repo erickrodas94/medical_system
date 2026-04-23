@@ -438,5 +438,78 @@
     // Inicializar la gráfica cuando la página cargue
     document.addEventListener('DOMContentLoaded', initChart);
 </script>
+<script>
+    // 1. Recibimos los JSON de PHP
+    const patientPoints = <?= $pediatricJson ?? '[]' ?>; 
+    const whoData = <?= $whoCurvesJson ?? '{}' ?>;
+
+    function renderPediatricChart() {
+        const ctx = document.getElementById('pediatricChart').getContext('2d');
+        
+        // Extraemos las líneas de la OMS
+        const weightCurves = whoData.weight || [];
+        const labels = weightCurves.map(row => row.age_months); // Eje X: 0, 1, 2... 60
+        
+        const p3Data = weightCurves.map(row => row.P3);
+        const p50Data = weightCurves.map(row => row.P50);
+        const p97Data = weightCurves.map(row => row.P97);
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    // CAPA FONDO: Las líneas de la OMS
+                    {
+                        label: 'Percentil 97',
+                        data: p97Data,
+                        borderColor: '#fca5a5', // Rojo suave
+                        borderWidth: 1,
+                        pointRadius: 0, // Ocultar los puntos de la línea
+                        fill: false
+                    },
+                    {
+                        label: 'Percentil 50 (Mediana)',
+                        data: p50Data,
+                        borderColor: '#10b981', // Verde esmeralda
+                        borderWidth: 2,
+                        borderDash: [5, 5], // Línea punteada
+                        pointRadius: 0,
+                        fill: false
+                    },
+                    {
+                        label: 'Percentil 3',
+                        data: p3Data,
+                        borderColor: '#fca5a5',
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        fill: false
+                    },
+                    // CAPA FRENTE: El paciente (Scatter Plot)
+                    {
+                        type: 'scatter', // Puntitos sueltos
+                        label: 'Mi Paciente',
+                        data: patientPoints, // Tiene {x: meses, y: peso}
+                        backgroundColor: '#4f46e5', // Azul índigo fuerte
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        pointRadius: 6, // Puntos grandes para que resalten
+                        pointHoverRadius: 8
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'Edad (Meses)' } },
+                    y: { title: { display: true, text: 'Peso (Kg)' } }
+                }
+            }
+        });
+    }
+
+    // Ejecutar si estamos en la pestaña correcta
+    document.addEventListener('DOMContentLoaded', renderPediatricChart);
+</script>
 
 <?php include '../views/layouts/footer.php'; ?>

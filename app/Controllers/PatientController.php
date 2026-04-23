@@ -13,6 +13,7 @@ use App\Models\Transaction;
 use App\Models\Prescription;
 use App\Models\State;
 use App\Models\PatientVital;
+use App\Models\WhoStandard;
 
 class PatientController {
     
@@ -131,27 +132,39 @@ class PatientController {
 
         $specialty = $_SESSION['user']['specialty'] ?? '';
         $pediatricData = [];
+        $whoCurves = [];
 
-        if ($specialty === 'specialty_pediatrics') {
-            $rawHistory = $patientModel->getPediatricGrowthHistory($id);
+        if ($specialty === 'Pediatría') {
+            $patientModel = new Patient($this->db);
+            $whoModel = new WhoStandard($this->db);
             
-            // Normalizamos los datos a kg y cm para comparar con la OMS
+            // 1. Obtenemos los PUNTITOS del paciente
+            $rawHistory = $patientModel->getPediatricGrowthHistory($id);
             foreach ($rawHistory as $row) {
+                // Convertir libras a kg si es necesario
                 $weight = ($row['weight_unit'] === 'lb') ? $row['weight_value'] * 0.453592 : $row['weight_value'];
                 $height = ($row['height_unit'] === 'mt') ? $row['height_value'] * 100 : $row['height_value'];
                 $head = ($row['head_circumference_unit'] === 'in') ? $row['head_circumference'] * 2.54 : $row['head_circumference'] ?? 0;
                 
                 $pediatricData[] = [
-                    'x' => $row['age_months'],
-                    'weight' => round($weight, 2),
+                    'x' => $row['age_months'], // Eje X (Meses)
+                    'weight' => round($weight, 2),   // Eje Y (Peso en KG)
                     'height' => round($height, 2),
-                    'head'   => round($head, 2),
-                    'gender' => $row['gender']
+                    'head_circumference'   => round($head, 2),
                 ];
             }
+
+            // 2. Obtenemos las LÍNEAS DE FONDO de la OMS para el sexo del paciente
+            // Asegúrate de que $patient['gender'] sea 'M' o 'F'
+            $gender = $patient['gender'] ?? 'M'; 
+            $whoCurves['weight'] = $whoModel->getCurves($gender, 'weight');
+            $whoCurves['height'] = $whoModel->getCurves($gender, 'height');
+            $whoCurves['head_circumference'] = $whoModel->getCurves($gender, 'head_circumference');
         }
 
+        // Convertimos ambas cosas a JSON para pasarlas a Javascript
         $pediatricJson = json_encode($pediatricData);
+        $whoCurvesJson = json_encode($whoCurves);
 
         require_once '../views/patients/show.php';
     }
