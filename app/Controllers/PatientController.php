@@ -133,14 +133,13 @@ class PatientController {
         $pediatricData = [];
 
         if ($specialty === 'specialty_pediatrics') {
-            $patientModel = new Patient($this->db);
             $rawHistory = $patientModel->getPediatricGrowthHistory($id);
             
             // Normalizamos los datos a kg y cm para comparar con la OMS
             foreach ($rawHistory as $row) {
                 $weight = ($row['weight_unit'] === 'lb') ? $row['weight_value'] * 0.453592 : $row['weight_value'];
                 $height = ($row['height_unit'] === 'mt') ? $row['height_value'] * 100 : $row['height_value'];
-                $head = ($row['head_circumference_unit'] === 'in') ? $row['head_circumference'] * 2.54 : $row['head_circumference'];
+                $head = ($row['head_circumference_unit'] === 'in') ? $row['head_circumference'] * 2.54 : $row['head_circumference'] ?? 0;
                 
                 $pediatricData[] = [
                     'x' => $row['age_months'],
