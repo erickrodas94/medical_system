@@ -59,4 +59,25 @@ class ClinicCase {
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
+
+    public function edit($data) {
+        try {
+            $sql = "UPDATE clinic_cases SET 
+                        title = :title
+                    WHERE ID = :case_id 
+                      AND clinic_ID = :clinic_id";
+                    
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                'case_id'        => $data['case_id'],
+                'clinic_id'      => $data['clinic_id'],
+                'title'          => trim($data['title'])
+            ]);
+            
+            return ['success' => true];
+            
+        } catch (\Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
 }

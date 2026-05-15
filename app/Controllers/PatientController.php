@@ -51,6 +51,8 @@ class PatientController {
         foreach ($patients as &$p) {
             $p['status_translated'] = __('status_' . $p['patient_status']);
             $p['tutor_relation_translated'] = !empty($p['tutor_relation']) ? __('rel_' . $p['tutor_relation']) : '';
+            $p['identity_type_translated'] = !empty($p['patient_id_type']) ? __($p['patient_id_type']) : 'ID';
+            $p['tutor_identity_type_translated'] = __('lbl_tutor') . ' - ' . (!empty($p['tutor_id_type']) ? __($p['tutor_id_type']) : 'ID');
         }
         unset($p);
 
@@ -66,6 +68,8 @@ class PatientController {
         }
 
         $term = $_GET['q'] ?? '';
+        // Limpiamos la búsqueda si parece un número de identidad
+        $cleanQuery = preg_replace('/[^a-zA-Z0-9]/', '', $term);
         $clinicId = $_SESSION['clinic']['id'];
         $patientModel = new Patient($this->db);
 
@@ -78,6 +82,8 @@ class PatientController {
         foreach ($patients as &$p) {
             $p['status_translated'] = __('status_' . $p['patient_status']);
             $p['tutor_relation_translated'] = !empty($p['tutor_relation']) ? __('rel_' . $p['tutor_relation']) : '';
+            $p['identity_type_translated'] = !empty($p['patient_id_type']) ? __($p['patient_id_type']) : 'ID';
+            $p['tutor_identity_type_translated'] = __('lbl_tutor') . ' - ' . (!empty($p['tutor_id_type']) ? __($p['tutor_id_type']) : 'ID');
         }
 
         echo json_encode($patients);
@@ -110,7 +116,7 @@ class PatientController {
         $activeCaseId = isset($_GET['case_id']) ? $_GET['case_id'] : (!empty($cases) ? $cases[0]['ID'] : null);
         $backgroundData = $bgModel->getPatientBackground($patient['ID'], $userId);
 
-        // --- CAMBIO AQUÍ: OBTENEMOS LA LÍNEA DE TIEMPO UNIFICADA EN VEZ DE SOLO EVOLUCIONES ---
+        // OBTENEMOS LA LÍNEA DE TIEMPO UNIFICADA
         $timeline = [];
         $doctors = [];
         if ($activeCaseId) {
@@ -134,7 +140,7 @@ class PatientController {
         $pediatricData = [];
         $whoCurves = [];
 
-        if ($specialty === 'Pediatría') {
+        if ($specialty === 'specialty_pediatrics') {
             $patientModel = new Patient($this->db);
             $whoModel = new WhoStandard($this->db);
             
@@ -176,56 +182,69 @@ class PatientController {
     public function store() {
         if (!isset($_SESSION['user']['id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') exit;
 
+        $requiresTutor = isset($_POST['requires_tutor']);
+        
+        // Limpieza absoluta de caracteres especiales para los documentos
+        $identityNumber = preg_replace('/[^a-zA-Z0-9]/', '', $_POST['identity_number'] ?? '');
+        $tutorIdentity  = preg_replace('/[^a-zA-Z0-9]/', '', $_POST['tutor_identity_number'] ?? '');
+        
         $firstName = trim($_POST['first_name'] ?? '');
         $lastName  = trim($_POST['last_name'] ?? '');
-        $email     = trim($_POST['primary_email'] ?? '');
-        $requiresTutor = isset($_POST['requires_tutor']);
-        $identityNumber = trim($_POST['identity_number'] ?? '');
-        $tutorIdentity = trim($_POST['tutor_identity_number'] ?? '');
-        
-        if (empty($firstName) || empty($lastName) || empty($_POST['birth_date'])) {
-            $_SESSION['message'] = ['type' => 'error', 'message' => __('msg_error_empty_fields')];
+        $birthDate = $_POST['birth_date'] ?? '';
+
+        // 1. Validación de datos mínimos requeridos
+        if (empty($firstName) || empty($lastName) || empty($birthDate)) {
+            $_SESSION['message']   = ['type' => 'error', 'message' => __('msg_error_patient_empty_fields')];
+            $_SESSION['old_input'] = $_POST;
             header('Location: ' . URL_BASE . 'pacientes'); exit;
         }
 
+        // 2. Validación cruzada: Si no tiene tutor, DEBE tener un documento de identidad
         if (!$requiresTutor && empty($identityNumber)) {
-            $_SESSION['message'] = ['type' => 'error', 'message' => __('msg_error_identity_required') ?? 'ID requerido.'];
+            $_SESSION['message']   = ['type' => 'error', 'message' => __('msg_error_identity_required') ?? 'ID requerido.'];
+            $_SESSION['old_input'] = $_POST;
             header('Location: ' . URL_BASE . 'pacientes'); exit;
         }
 
+        // 3. Armado del arreglo limpio para enviar al Modelo
         $data = [
-            'identity_type_ID'   => $_POST['identity_type_ID'] ?? null,
-            'identity_number'    => $identityNumber,
-            'first_name'         => $firstName,
-            'last_name'          => $lastName,
-            'birth_date'         => $_POST['birth_date'],
-            'gender'             => $_POST['gender'] ?: null,
-            'primary_cellphone'  => trim($_POST['primary_cellphone']) ?: null,
-            'primary_email'      => $email ?: null,
-            'country_ID'         => $_POST['country_ID'] ?? 1,
-            'state_ID'           => $_POST['state_ID'] ?? 1,
-            'assigned_doctor_ID' => $_POST['assigned_doctor_ID'] ?? null,
-            'requires_tutor'           => isset($_POST['requires_tutor']) ? 1 : 0,
-            'tutor_country_ID'         => $_POST['tutor_country_ID'] ?? $_POST['country_ID'],
-            'tutor_identity_type_ID'   => $_POST['tutor_identity_type_ID'] ?? null,
-            'tutor_identity_number'    => $tutorIdentity,
-            'tutor_first_name'         => trim($_POST['tutor_first_name'] ?? ''),
-            'tutor_last_name'          => trim($_POST['tutor_last_name'] ?? ''),
-            'tutor_phone'              => trim($_POST['tutor_phone'] ?? ''),
-            'tutor_relationship'       => $_POST['tutor_relationship'] ?? null
+            'identity_type_ID'       => $_POST['identity_type_ID'] ?? null,
+            'identity_number'        => $identityNumber,
+            'first_name'             => $firstName,
+            'last_name'              => $lastName,
+            'birth_date'             => $birthDate,
+            'gender'                 => $_POST['gender'] ?: null,
+            'primary_cellphone'      => trim($_POST['primary_cellphone']) ?: null,
+            'primary_email'          => trim($_POST['primary_email']) ?: null,
+            'country_ID'             => $_POST['country_ID'] ?? 1,
+            'state_ID'               => $_POST['state_ID'] ?? 1,
+            'assigned_doctor_ID'     => $_POST['assigned_doctor_ID'] ?? null,
+            
+            // Datos del tutor (Solo si aplica)
+            'requires_tutor'         => $requiresTutor ? 1 : 0,
+            'tutor_country_ID'       => $_POST['tutor_country_ID'] ?? ($_POST['country_ID'] ?? 1),
+            'tutor_identity_type_ID' => $_POST['tutor_identity_type_ID'] ?? null,
+            'tutor_identity_number'  => $tutorIdentity,
+            'tutor_first_name'       => trim($_POST['tutor_first_name'] ?? ''),
+            'tutor_last_name'        => trim($_POST['tutor_last_name'] ?? ''),
+            'tutor_phone'            => trim($_POST['tutor_phone'] ?? ''),
+            'tutor_relationship'     => $_POST['tutor_relationship'] ?? null
         ];
 
+        // 4. Guardar en Base de Datos
         $patientModel = new Patient($this->db);
         $result = $patientModel->create($data);
 
+        // 5. Manejo de Respuesta
         if ($result['success']) {
             $_SESSION['message'] = [
-                'type' => 'success',
+                'type'    => 'success', 
                 'message' => $result['is_new'] ? __('msg_patient_saved') : __('msg_patient_exists')
             ];
             header('Location: ' . URL_BASE . 'pacientes/ver/' . $result['patient_id']);
         } else {
-            $_SESSION['message'] = ['type' => 'error', 'message' => $result['error']];
+            $_SESSION['message']   = ['type' => 'error', 'message' => __('msg_error') .': '. $result['error']];
+            $_SESSION['old_input'] = $_POST;
             header('Location: ' . URL_BASE . 'pacientes');
         }
         exit;
@@ -320,7 +339,7 @@ class PatientController {
             
         } catch (\Exception $e) {
             if ($this->db->inTransaction()) $this->db->rollBack();
-            $_SESSION['message'] = ['type' => 'error', 'message' => 'Error: ' . $e->getMessage()];
+            $_SESSION['message'] = ['type' => 'error', 'message' => __('msg_error') .': '. $e->getMessage()];
         }
         
         header('Location: ' . URL_BASE . 'pacientes/ver/' . $_POST['patient_id']);
@@ -328,7 +347,7 @@ class PatientController {
     }
 
     // ==========================================
-    // 3. MÓDULO CLÍNICO INDIVIDUAL (POR PESTAÑAS)
+    // 3. CASOS DEL PACIENTE
     // ==========================================
 
     public function storeCase() {
@@ -348,11 +367,36 @@ class PatientController {
             $_SESSION['message'] = ['type' => 'success', 'message' => __('msg_case_saved') ?? 'Caso creado con éxito.'];
             header('Location: ' . URL_BASE . 'pacientes/ver/' . $_POST['patient_id'] . '?case_id=' . $result['case_id']);
         } else {
-            $_SESSION['message'] = ['type' => 'error', 'message' => 'Error al crear el caso.'];
+            $_SESSION['message'] = ['type' => 'error', 'message' => __('msg_error') ?? 'Error al crear el caso.'];
             header('Location: ' . URL_BASE . 'pacientes/ver/' . $_POST['patient_id']);
         }
         exit;
     }
+
+    public function editCase() {
+        if (!isset($_SESSION['user']['id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') exit;
+
+        $caseModel = new ClinicCase($this->db);
+        $data = [
+            'clinic_id'      => $_SESSION['clinic']['id'],
+            'case_id'        => $_POST['case_id'],
+            'title'          => $_POST['title']
+        ];
+
+        $result = $caseModel->edit($data);
+        if ($result['success']) {
+            $_SESSION['message'] = ['type' => 'success', 'message' => __('msg_case_edited') ?? 'Caso editado con éxito.'];
+            header('Location: ' . URL_BASE . 'pacientes/ver/' . $_POST['patient_id'] . '?case_id=' . $_POST['case_id']);
+        } else {
+            $_SESSION['message'] = ['type' => 'error', 'message' => __('msg_error') ?? 'Error al editar el caso.'];
+            header('Location: ' . URL_BASE . 'pacientes/ver/' . $_POST['patient_id']);
+        }
+        exit;
+    }
+
+    // ==========================================
+    // 4. TRIAGE, EVOLUCIÓN Y RECETA
+    // ==========================================
 
     public function storeTriage() {
         if (!isset($_SESSION['user']['id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') exit;
@@ -380,7 +424,7 @@ class PatientController {
                 'assistance_type'      => $_POST['assistance_type'] ?? 'In-Person',
                 'evolution_notes'      => $_POST['evolution_notes'] ?? '',
                 'physical_exam_notes'  => $_POST['physical_exam_notes'] ?? '',
-                'patient_instructions' => $_POST['patient_instructions'] ?? '',
+                'patient_instructions' => "", //$_POST['patient_instructions'] ?? '',
                 'status'               => isset($_POST['is_draft']) ? 'Draft' : 'Finalized'
             ];
 
@@ -415,9 +459,6 @@ class PatientController {
         exit;
     }
 
-    /**
-     * Guarda una receta rápida (Sin pasar por el flujo unificado)
-     */
     public function storePrescription() {
         if (!isset($_SESSION['user']['id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') exit;
 
@@ -461,7 +502,7 @@ class PatientController {
 
         } catch (\Exception $e) {
             $this->db->rollBack();
-            $_SESSION['message'] = ['type' => 'error', 'message' => 'Error: ' . $e->getMessage()];
+            $_SESSION['message'] = ['type' => 'error', 'message' => __('msg_error') .': '. $e->getMessage()];
         }
 
         header('Location: ' . URL_BASE . 'pacientes/ver/' . $_POST['patient_id'] . '?case_id=' . $_POST['case_id']);
@@ -469,7 +510,7 @@ class PatientController {
     }
 
     // ==========================================
-    // 4. MÓDULO DE CONSULTA UNIFICADA (MODO ENFOQUE)
+    // 5. MÓDULO DE CONSULTA UNIFICADA (MODO ENFOQUE)
     // ==========================================
 
     public function newConsultation($patientId) {
@@ -485,14 +526,14 @@ class PatientController {
         $activeCaseId = $_GET['case_id'] ?? (!empty($cases) ? $cases[0]['ID'] : null);
 
         if (!$activeCaseId) {
-            $_SESSION['message'] = ['type' => 'error', 'message' => 'Debe crear un caso clínico primero.'];
+            $_SESSION['message'] = ['type' => 'error', 'message' => __('msg_no_case_created') ?? 'Debe crear un caso clínico primero.'];
             header('Location: ' . URL_BASE . 'pacientes/ver/' . $patientId); exit;
         }
         require_once '../views/patients/consultation_form.php';
     }
 
     // ==========================================
-    // 5. ALMACENAR CONSULTA (TODA LA CONSULTA)
+    // 6. ALMACENAR CONSULTA (TODA LA CONSULTA)
     // ==========================================
     public function storeConsultation() {
         if (!isset($_SESSION['user']['id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') exit;
@@ -527,7 +568,7 @@ class PatientController {
                 $triageModel = new Triage($this->db);
                 $triageData = [
                     'person_id'            => $patientId, // clinic_patients.ID
-                    'evolution_id'         => $evolutionId,
+                    'evolution_id'         => $evolutionId ?? null,
                     'user_id'              => $userId,
                     'weight_value'         => $_POST['weight_value'] ?? null,
                     'weight_unit'          => $_POST['weight_unit'] ?? 'lb',
@@ -545,7 +586,6 @@ class PatientController {
                 if (!$triageResult['success']) throw new \Exception("Triage Save Error: " . $triageResult['error']);
             }
 
-            // 3. GUARDAR RECETA
             // 3. GUARDAR RECETA
             $hasInstructions = !empty(trim($_POST['patient_instructions'] ?? ''));
             $hasMedications = !empty($_POST['medications']) && is_array($_POST['medications']);
@@ -617,7 +657,7 @@ class PatientController {
             
             // Guardamos lo que el usuario escribió en la sesión temporalmente
             $_SESSION['old_input'] = $_POST; 
-            $_SESSION['message'] = ['type' => 'error', 'message' => 'Error: ' . $e->getMessage()];
+            $_SESSION['message'] = ['type' => 'error', 'message' => __('msg_error') .': '. $e->getMessage()];
             
             // Redireccionamos atrás
             // header('Location: ' . $_SERVER['HTTP_REFERER']);

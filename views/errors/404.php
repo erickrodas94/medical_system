@@ -32,7 +32,7 @@
         </div>
 
         <p class="mt-12 text-xs text-slate-400 font-medium uppercase tracking-widest">
-            KeyTech Medical System &bull; Guatemala
+            <?= APP_NAME ?> &bull; <?= APP_VERSION ?> &bull; <?= APP_COMPANY ?>
         </p>
     </div>
 

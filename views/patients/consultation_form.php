@@ -38,7 +38,7 @@
                 </div>
                 <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                     <div class="space-y-1.5">
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide"><?= __('blood_pressure') ?> (mmHg)</label>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide"><?= __('blood_pressure') ?></label>
                         <div class="flex items-center gap-1">
                             <input type="number" name="systolic" placeholder="120" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-center focus:ring-2 focus:ring-emerald-500 outline-none">
                             <span class="text-slate-400 font-bold">/</span>
@@ -47,12 +47,12 @@
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5"><?= __('heart_rate') ?> (LPM)</label>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5"><?= __('heart_rate') ?></label>
                         <input type="number" name="heart_rate" placeholder="70" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5"><?= __('spo2') ?> (%)</label>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5"><?= __('oxygen_saturation') ?></label>
                         <input type="number" name="spo2" placeholder="98" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
                     </div>
 
@@ -88,6 +88,23 @@
                             </select>
                         </div>
                     </div>
+                    <?php if (($_SESSION['user']['specialty'] ?? '') === 'specialty_pediatrics'): ?>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5"><?= __('head_circumference') ?></label>
+                        <div class="flex">
+                            <input type="number" step="0.1" name="head_circumference" placeholder="0.0" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            <select name="head_circumference_unit" class="border-slate-300 px-3 py-2 rounded-r-lg text-sm bg-slate-50">
+                                <option value="cm" selected><?= __('cm') ?></option>
+                                <option value="in"><?= __('in') ?></option>
+                            </select>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                    <div>
+                    </div>
+                </div>
+                <div class="p-3 border-t border-slate-100 bg-slate-50 flex items-center justify-center">
+                    <p class="text-[11px] text-slate-400"><i data-lucide="info" class="w-3 h-3 inline"></i> <?= __('calculate_bmi') ?></p>
                 </div>
             </div>
 

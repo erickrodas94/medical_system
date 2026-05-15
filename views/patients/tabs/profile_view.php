@@ -147,9 +147,9 @@
                     <span class="font-bold text-amber-900"><?= htmlspecialchars($patient['tutor_relation_translated'] ?? $patient['tutor_relation']) ?></span>
                 </div>
                 <div class="flex justify-between border-b border-amber-100 pb-2">
-                    <span class="text-amber-700 font-medium"><?= __(htmlspecialchars($patient['tutor_identity_type_label'] ?? 'ID')) ?></span>
+                    <span class="text-amber-700 font-medium"><?= __(htmlspecialchars($patient['tutor_id_type'] ?? 'ID')) ?></span>
                     <span class="font-bold text-amber-900">
-                        <?= htmlspecialchars($patient['tutor_identity'] ?? 'N/A') ?>
+                        <?= htmlspecialchars($patient['tutor_identity_number'] ?? 'N/A') ?>
                     </span>
                 </div>
                 <div class="flex justify-between pb-1">

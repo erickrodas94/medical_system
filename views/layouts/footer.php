@@ -46,9 +46,9 @@
                 } else {
                     // Opcional: Mostrar un loader para que el usuario sepa que se está procesando
                     const btn = this.querySelector('button[type="submit"]');
-                    if(btn) {
+                    if (btn) {
                         btn.innerHTML = '<i class="animate-spin mr-2" data-lucide="loader-2"></i> Procesando...';
-                        btn.classList.add('opacity-70', 'cursor-not-allowed');
+                        btn.classList.add('opacity-70', 'cursor-not-allowed', 'flex', 'justify-center', 'w-full');
                         lucide.createIcons();
                     }
                 }

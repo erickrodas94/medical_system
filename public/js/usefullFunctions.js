@@ -83,3 +83,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+
+// --- Lógica para expandir y contraer texto ---
+function toggleCaseReason(textToToggle, buttonToHide, buttonToShow) {
+    const textEl = document.getElementById(textToToggle);
+    const btnToHide = document.getElementById(buttonToHide);
+    const btnToShow = document.getElementById(buttonToShow);
+
+    if (textEl.classList.contains('line-clamp-3')) {
+        textEl.classList.remove('line-clamp-3'); // Quita el límite
+    } else {
+        textEl.classList.add('line-clamp-3'); // Vuelve a poner el límite a 3 líneas
+    }
+    btnToHide.style.display = "none";
+    btnToShow.style.display = "block";
+}

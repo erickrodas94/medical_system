@@ -23,15 +23,28 @@ class Patient {
 
         $sql = "
             /* 1. Evoluciones */
-            SELECT 'evolution' as record_type, E.ID as record_id, E.created_at, E.evolution_notes as main_content, E.physical_exam_notes as sub_content,
-                    CONCAT(U.first_name, ' ', U.last_name) as doctor_full_name, U.ID as doctor_id, E.case_ID as extra_data
+            SELECT 
+                'evolution' as record_type, 
+                E.ID as record_id, 
+                E.created_at, 
+                E.evolution_notes as main_content, 
+                E.physical_exam_notes as sub_content,
+                CONCAT(U.first_name, ' ', U.last_name) as doctor_full_name, 
+                U.ID as doctor_id, 
+                E.case_ID as extra_data,
+                E.assistance_type as type,
+                E.status as status
             FROM clinic_evolutions E JOIN users U ON E.doctor_ID = U.ID
             WHERE E.person_ID = :person_id $caseFilter
 
             UNION ALL
 
             /* 2. Signos Vitales (Dinámico y Completo) */
-            SELECT 'vitals' as record_type, T.ID as record_id, T.taken_at as created_at, CONCAT_WS('|',
+            SELECT 
+                'vitals' as record_type, 
+                T.ID as record_id, 
+                T.taken_at as created_at, 
+                CONCAT_WS('|',
                     IF(T.systolic_bp IS NOT NULL AND T.diastolic_bp IS NOT NULL, CONCAT('P. Arterial:', T.systolic_bp, '/', T.diastolic_bp, ' mmHg'), NULL),
                     IF(T.heart_rate_bpm IS NOT NULL, CONCAT('F. Cardíaca:', T.heart_rate_bpm, ' lpm'), NULL),
                     IF(T.oxygen_saturation_pct IS NOT NULL, CONCAT('SpO2:', T.oxygen_saturation_pct, '%'), NULL),
@@ -42,14 +55,23 @@ class Patient {
                     IF(T.respiratory_rate_rpm IS NOT NULL, CONCAT('F. Resp:', T.respiratory_rate_rpm, ' rpm'), NULL),
                     IF(T.glucose_value IS NOT NULL, CONCAT('Glucosa:', T.glucose_value, ' mg/dL'), NULL),
                     IF(T.head_circumference IS NOT NULL, CONCAT('P. Cefálico:', T.head_circumference, ' ', T.head_circumference_unit), NULL)
-                ) as main_content, NULL as sub_content, CONCAT(U.first_name, ' ', U.last_name) as doctor_full_name, U.ID as doctor_id, NULL as extra_data
+                ) as main_content, 
+                NULL as sub_content, 
+                CONCAT(U.first_name, ' ', U.last_name) as doctor_full_name, 
+                U.ID as doctor_id, 
+                NULL as extra_data,
+                NULL as type,
+                NULL as status
             FROM clinic_triage T JOIN users U ON T.created_by_user_ID = U.ID
             WHERE T.person_ID = :person_id
 
             UNION ALL
 
             /* 3. Recetas (Medicamentos como contenido PRINCIPAL) */
-            SELECT 'prescription' as record_type, P.ID as record_id, P.created_at, 
+            SELECT 
+                'prescription' as record_type, 
+                P.ID as record_id, 
+                P.created_at, 
                 /* Extraemos todos los detalles separados por :: (columnas) y || (filas) */
                 (SELECT GROUP_CONCAT(
                     CONCAT(
@@ -63,8 +85,15 @@ class Patient {
                 FROM prescription_details 
                 WHERE prescription_ID = P.ID) as main_content,
                 /* Las instrucciones pasan a ser el contenido secundario */
-                P.general_instructions as sub_content, CONCAT(U.first_name, ' ', U.last_name) as doctor_full_name, U.ID as doctor_id, NULL as extra_data
-            FROM evolution_prescriptions P JOIN clinic_evolutions E ON P.evolution_ID = E.ID JOIN users U ON P.doctor_user_ID = U.ID
+                P.general_instructions as sub_content, 
+                CONCAT(U.first_name, ' ', U.last_name) as doctor_full_name, 
+                U.ID as doctor_id, 
+                NULL as extra_data,
+                NULL as type,
+                NULL as status
+            FROM evolution_prescriptions P 
+            JOIN clinic_evolutions E ON P.evolution_ID = E.ID 
+            JOIN users U ON P.doctor_user_ID = U.ID
             WHERE E.person_ID = :person_id $caseFilter
 
             ORDER BY created_at DESC";
@@ -80,11 +109,16 @@ class Patient {
     public function getLatestByClinic($clinicId, $limit = 50) {
         $sql = "SELECT p.*, cp.ID as patient_id, cp.patient_status,
                        t.first_name as tutor_fname, t.last_name as tutor_lname, 
-                       t.primary_cellphone as tutor_phone, pg.relationship as tutor_relation
+                       t.primary_cellphone as tutor_phone, pg.relationship as tutor_relation,
+                       t.identity_number as tutor_identity_number,
+                       it.label_key as patient_id_type,
+                       it2.label_key as tutor_id_type
                 FROM clinic_patients cp
                 INNER JOIN persons p ON cp.person_ID = p.ID
                 LEFT JOIN person_guardians pg ON p.ID = pg.dependent_person_ID
                 LEFT JOIN persons t ON pg.responsible_person_ID = t.ID
+                LEFT JOIN identity_types it ON p.identity_type_ID = it.ID
+                LEFT JOIN identity_types it2 ON t.identity_type_ID = it2.ID
                 WHERE cp.clinic_ID = :clinicId 
                   AND cp.deleted_at IS NULL
                 ORDER BY cp.created_at DESC LIMIT :limit";
@@ -102,7 +136,7 @@ class Patient {
     private function findOrCreatePerson($pData) {
         $existing = false;
 
-        // 1. Búsqueda exacta: Por Documento de Identidad (DPI, Pasaporte, etc.)
+        // 1. Búsqueda exacta: Por Documento de Identidad (Si existe)
         if (!empty($pData['identity_number']) && !empty($pData['identity_type_ID'])) {
             $sql = "SELECT ID FROM persons WHERE identity_number = :doc AND identity_type_ID = :type LIMIT 1";
             $stmt = $this->db->prepare($sql);
@@ -123,32 +157,29 @@ class Patient {
             $existing = $stmt->fetch();
         }
 
-        // 3. Búsqueda terciaria: Por Nombres y Apellidos
-        if (!$existing && !empty($pData['first_name']) && !empty($pData['last_name'])) {
-            $sql = "SELECT ID FROM persons WHERE first_name = :fname AND last_name = :lname LIMIT 1";
+        // 3. Búsqueda terciaria (DEPURADA): Nombres, Apellidos Y FECHA DE NACIMIENTO (Evita mezclar homónimos)
+        if (!$existing && !empty($pData['first_name']) && !empty($pData['last_name']) && !empty($pData['birth_date'])) {
+            $sql = "SELECT ID FROM persons WHERE first_name = :fname AND last_name = :lname AND birth_date = :bdate LIMIT 1";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
                 'fname' => trim($pData['first_name']),
-                'lname' => trim($pData['last_name'])
+                'lname' => trim($pData['last_name']),
+                'bdate' => $pData['birth_date']
             ]);
             $existing = $stmt->fetch();
         }
 
-        // Si la persona ya existe, retornamos su ID y no duplicamos
-        if ($existing) {
-            return $existing['ID'];
-        }
+        // Si la persona ya existe, retornamos su ID y evitamos duplicados
+        if ($existing) return $existing['ID'];
 
-        // Si pasó todos los filtros y no existe, hacemos el INSERT
+        // Si pasó todos los filtros y no existe, insertamos
         $sqlInsert = "INSERT INTO persons (
-                        identity_type_ID, identity_number, first_name, last_name, 
-                        birth_date, gender, primary_email, primary_cellphone, 
-                        requires_tutor, country_ID, state_ID
-                    ) VALUES (
-                        :type_id, :id_num, :fname, :lname, 
-                        :bdate, :gender, :email, :phone, 
-                        :req_tutor, :country_id, :state_id
-                    )";
+                        identity_type_ID, identity_number, first_name, last_name, birth_date, gender, 
+                        primary_email, primary_cellphone, requires_tutor, country_ID, state_ID
+                      ) VALUES (
+                        :type_id, :id_num, :fname, :lname, :bdate, :gender, 
+                        :email, :phone, :req_tutor, :country_id, :state_id
+                      )";
         $stmtInsert = $this->db->prepare($sqlInsert);
         $stmtInsert->execute([
             'type_id'    => $pData['identity_type_ID'] ?? null,
@@ -411,32 +442,62 @@ class Patient {
      * Búsqueda en tiempo real (Server-Side)
      */
     public function searchPatients($clinicId, $term, $limit = 50) {
+        // 1. Término normal (con espacios y guiones) para Nombres, Correos y UUID
         $searchTerm = "%{$term}%";
-        $sql = "SELECT p.*, cp.ID as patient_id, cp.patient_status,
-                       t.first_name as tutor_fname, t.last_name as tutor_lname, 
-                       t.primary_cellphone as tutor_phone, pg.relationship as tutor_relation
+        
+        // 2. Término limpio (solo letras y números) para Teléfonos y Documentos
+        $cleanTermValue = preg_replace('/[^a-zA-Z0-9]/', '', $term);
+        $cleanSearchTerm = "%{$cleanTermValue}%";
+
+       $sql = "SELECT p.*, cp.ID as patient_id, cp.patient_status,
+                   t.first_name as tutor_fname, t.last_name as tutor_lname, 
+                   t.primary_cellphone as tutor_phone, t.identity_number as tutor_identity_number,
+                   pg.relationship as tutor_relation, t.primary_email as tutor_email,
+                   it.label_key as patient_id_type,
+                   it2.label_key as tutor_id_type
                 FROM clinic_patients cp
                 INNER JOIN persons p ON cp.person_ID = p.ID
+                LEFT JOIN identity_types it ON p.identity_type_ID = it.ID
                 LEFT JOIN person_guardians pg ON p.ID = pg.dependent_person_ID
                 LEFT JOIN persons t ON pg.responsible_person_ID = t.ID
+                LEFT JOIN identity_types it2 ON t.identity_type_ID = it2.ID
                 WHERE cp.clinic_ID = :clinicId 
-                  AND cp.deleted_at IS NULL
-                  AND (
-                      CONCAT(p.first_name, ' ', p.last_name) LIKE :term1 
-                      OR p.primary_email LIKE :term2 
-                      OR p.primary_cellphone LIKE :term3 
-                      OR p.uuid LIKE :term4
-                  )
+                AND cp.deleted_at IS NULL
+                AND (
+                    -- BUSCAR EN LOS DATOS DEL PACIENTE
+                    CONCAT(p.first_name, ' ', p.last_name) LIKE :term1 
+                    OR p.primary_email LIKE :term2 
+                    OR p.uuid LIKE :term3
+                    OR p.primary_cellphone LIKE :clean1 
+                    OR p.identity_number LIKE :clean2
+                    
+                    -- BUSCAR EN LOS DATOS DEL TUTOR (Si existe)
+                    OR CONCAT(t.first_name, ' ', t.last_name) LIKE :term4
+                    OR t.primary_email LIKE :term5 
+                    OR t.primary_cellphone LIKE :clean3
+                    OR t.identity_number LIKE :clean4
+                )
                 ORDER BY p.first_name ASC LIMIT :limit";
                 
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':clinicId', $clinicId, \PDO::PARAM_INT);
+        
+        // Binds para términos con espacios/guiones
         $stmt->bindValue(':term1', $searchTerm, \PDO::PARAM_STR);
         $stmt->bindValue(':term2', $searchTerm, \PDO::PARAM_STR);
         $stmt->bindValue(':term3', $searchTerm, \PDO::PARAM_STR);
         $stmt->bindValue(':term4', $searchTerm, \PDO::PARAM_STR);
+        $stmt->bindValue(':term5', $searchTerm, \PDO::PARAM_STR);
+        
+        // Binds para términos limpios (números exactos)
+        $stmt->bindValue(':clean1', $cleanSearchTerm, \PDO::PARAM_STR);
+        $stmt->bindValue(':clean2', $cleanSearchTerm, \PDO::PARAM_STR);
+        $stmt->bindValue(':clean3', $cleanSearchTerm, \PDO::PARAM_STR);
+        $stmt->bindValue(':clean4', $cleanSearchTerm, \PDO::PARAM_STR);
+        
         $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
         $stmt->execute();
+        
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
@@ -446,13 +507,16 @@ class Patient {
     public function getPatientsForUser($clinicId, $userId, $isAdmin, $limit = 50) {
         if ($isAdmin) {
             // El Admin ve todo (Tu consulta actual)
-            $sql = "SELECT p.*, cp.ID as patient_id, cp.patient_status,
+            $sql = "SELECT p.*, cp.ID as patient_id, cp.patient_status, it.label_key as patient_id_type,
                         t.first_name as tutor_fname, t.last_name as tutor_lname, 
-                        t.primary_cellphone as tutor_phone, pg.relationship as tutor_relation
+                        t.primary_cellphone as tutor_phone, pg.relationship as tutor_relation, t.primary_email as tutor_email,
+                        t.identity_number as tutor_identity_number, it2.label_key as tutor_id_type
                     FROM clinic_patients cp
                     INNER JOIN persons p ON cp.person_ID = p.ID
+                    LEFT JOIN identity_types it ON p.identity_type_id = it.ID
                     LEFT JOIN person_guardians pg ON p.ID = pg.dependent_person_ID
                     LEFT JOIN persons t ON pg.responsible_person_ID = t.ID
+                    LEFT JOIN identity_types it2 ON t.identity_type_id = it2.ID
                     WHERE cp.clinic_ID = :clinicId AND cp.deleted_at IS NULL
                     ORDER BY cp.created_at DESC LIMIT :limit";
                     
@@ -463,14 +527,17 @@ class Patient {
             
         } else {
             // El Doctor solo ve los suyos (Gracias al INNER JOIN)
-            $sql = "SELECT p.*, cp.ID as patient_id, cp.patient_status,
+            $sql = "SELECT p.*, cp.ID as patient_id, cp.patient_status, it.label_key as patient_id_type,
                         t.first_name as tutor_fname, t.last_name as tutor_lname, 
-                        t.primary_cellphone as tutor_phone, pg.relationship as tutor_relation
+                        t.primary_cellphone as tutor_phone, pg.relationship as tutor_relation, 
+                        t.identity_number as tutor_identity_number, it2.label_key as tutor_id_type
                     FROM clinic_patients cp
                     INNER JOIN persons p ON cp.person_ID = p.ID
                     INNER JOIN clinic_patient_users cpu ON cp.ID = cpu.clinic_patient_ID
+                    LEFT JOIN identity_types it ON p.identity_type_id = it.ID
                     LEFT JOIN person_guardians pg ON p.ID = pg.dependent_person_ID
                     LEFT JOIN persons t ON pg.responsible_person_ID = t.ID
+                    LEFT JOIN identity_types it2 ON t.identity_type_id = it2.ID
                     WHERE cp.clinic_ID = :clinicId 
                     AND cpu.user_ID = :userId 
                     AND cp.deleted_at IS NULL
@@ -491,11 +558,11 @@ class Patient {
      */
     public function getByIdAndUser($patientId, $clinicId, $userId, $canSeeAll) {
         $sql = "SELECT p.*, cp.ID as patient_id, cp.patient_status, cp.created_at as registered_at,
-                       it.label_key as identity_type_label,
+                       it.label_key as patient_id_type,
                        t.first_name as tutor_fname, t.last_name as tutor_lname, 
                        t.primary_cellphone as tutor_phone, pg.relationship as tutor_relation,
-                       tit.label_key as tutor_identity_type_label,
-                       t.identity_number as tutor_identity,
+                       tit.label_key as tutor_id_type,
+                       t.identity_number as tutor_identity_number,
                        co.iso_code as country_name,
                        st.name as state_name
                 FROM clinic_patients cp

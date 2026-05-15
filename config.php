@@ -52,3 +52,11 @@ if (isset($_SESSION['clinic']['timezone'])) {
 } else {
     date_default_timezone_set('America/Guatemala'); // Por defecto
 }
+
+define('APP_NAME', 'MediTech');
+define('APP_VERSION', '1.0.0');
+define('APP_COMPANY', 'KeyTech');
+define('AWS_S3_KEY', '');
+define('AWS_SECRET_S3_KEY', '');
+define('AWS_EMAIL_KEY' , '');
+define('AWS_SECRET_EMAIL_KEY' , '');

@@ -46,6 +46,7 @@ $router->post('pacientes/caso/guardar', 'PatientController@storeCase');
 $router->post('pacientes/triage/guardar', 'PatientController@storeTriage');
 $router->post('pacientes/evolucion/guardar', 'PatientController@storeEvolution');
 $router->post('pacientes/receta/guardar', 'PatientController@storePrescription');
+$router->post('pacientes/caso/editar', 'PatientController@editCase');
 
 // Flujo Unificado de Consulta (Modo Enfoque)
 $router->get('pacientes/consulta/{id}', 'PatientController@newConsultation');

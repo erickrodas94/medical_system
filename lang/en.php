@@ -23,6 +23,8 @@ return [
     'cancel_btn' => 'Cancel',
     'save_btn' => 'Save',
     'edit_data' => 'Edit Data',
+    'edit_btn' => 'Edit',
+    'delete_btn' => 'Delete',
 
     // Statuses
     'status_Active' => 'Active',
@@ -31,6 +33,17 @@ return [
 
     // Labels
     'not_registered' => 'Not registered',
+    'lbl_and'    => 'and',
+    'lbl_year'   => 'year',
+    'lbl_years'  => 'years',
+    'lbl_month'  => 'month',
+    'lbl_months' => 'months',
+    'lbl_week'   => 'week',
+    'lbl_weeks'  => 'weeks',
+    'lbl_day'    => 'day',
+    'lbl_days'   => 'days',
+    'read_more' => 'Read more',
+    'read_less' => 'Read less',
 
     // ==========================================
     // MESSAGES & ALERTS
@@ -49,6 +62,21 @@ return [
     'msg_patient_saved' => 'Patient registered successfully. Please complete their medical record.',
     'msg_patient_exists' => 'This patient was already registered in your clinic.',
     'msg_evolution_saved' => 'Evolution saved successfully.',
+    'msg_prescription_saved' => 'Prescription issued and saved correctly.',
+    'msg_triage_saved' => 'Triage registered correctly.',
+    'msg_no_case_created' => 'You must create a clinical case before continuing.',
+    'msg_case_not_found' => 'Clinical case not found.',
+    'msg_case_saved' => 'Clinical case opened correctly.',
+    'msg_case_edited' => 'Clinical case edited successfully.',
+    'msg_profile_updated' => 'Profile updated successfully.',
+    'msg_evolution_saved' => 'Evolution saved successfully.',
+    'msg_evolution_not_saved' => 'Error: The evolution could not be saved.',
+    'msg_consultation_saved' => 'Consultation completed successfully.',
+    'msg_error_identity_required' => 'Identity document is required.',
+    'msg_patient_info_not_editable' => 'Patient information cannot be modified.',
+    'msg_appointment_scheduled' => 'Appointment scheduled successfully.',
+    'msg_error' => 'Error: The action could not be completed.',
+    'msg_error_not_found' => 'Error: The requested resource was not found.',
 
     // ==========================================
     // AUTHENTICATION (LOGIN / LOGOUT)
@@ -139,6 +167,10 @@ return [
     'active_case' => 'Active Clinical Case',
     'no_active_case' => 'You must select or open an active clinical case.',
     'clinical_data' => 'Clinical Data',
+    'general_data' => 'General Data',
+    'medical_history' => 'Medical History',
+    'vital_sign_charts' => 'Vital Sign Charts',
+    'pediatric_charts' => 'Growth Charts (WHO)',
     'no_cases_registered' => 'No cases registered',
     'new_clinical_case' => 'New Clinical Case',
     'no_cases_registered_text' => 'This patient does not have any health problems registered yet. To start a medical consultation, you must first open a case.',
@@ -147,6 +179,12 @@ return [
     'initial_diagnosis' => 'Initial Diagnosis',
     'opened_at' => 'Opened at',
     'doctor' => 'Doctor',
+    'all_data' => 'All',
+    'evolutions' => 'Evolutions',
+    'vitals_signs' => 'Vital Signs',
+    'prescriptions' => 'Prescriptions',
+    'documents' => 'Documents',
+    'all_doctors' => 'All doctors',
 
     // Unified Consultation Flow
     'new_consultation' => 'New Complete Consultation',
@@ -159,12 +197,24 @@ return [
     'vital_signs' => 'Vital Signs',
     'vital_signs_history' => 'Vital Signs History',
     'btn_new_triage' => 'New Triage',
-    'blood_pressure' => 'Blood Pressure',
+    'btn_save_triage' => 'Save Triage',
+    'blood_pressure' => 'Blood Pressure (mmHg)',
     'weight' => 'Weight',
     'height' => 'Height',
     'temperature' => 'Temperature',
-    'kg' => 'kg', 'lb' => 'lb', 'cm' => 'cm', 'm' => 'm', 'in' => 'in', 'ft' => 'ft', 'C' => '°C', 'F' => '°F',
-
+    'heart_rate' => 'Heart Rate (BPM)',
+    'oxygen_saturation' => 'Oxygen Saturation (%)',
+    'head_circumference' => 'Head Circumference',
+    'kg' => 'kg',
+    'lb' => 'lb',
+    'cm' => 'cm',
+    'm' => 'm',
+    'in' => 'in',
+    'ft' => 'ft',
+    'C' => '°C',
+    'F' => '°F',
+    'calculate_bmi' => 'The system will automatically calculate the BMI (Body Mass Index) when saving.',
+    
     // Block 2: SOAP Evolution
     'evolution_soap' => 'SOAP Evolution',
     'evolutions' => 'Evolutions',
@@ -181,6 +231,7 @@ return [
     // Block 3: Prescriptions & Plan
     'prescriptions_plans' => 'Prescriptions and Plans',
     'btn_new_prescription' => 'New Prescription',
+    'btn_save_prescription' => 'Save Prescription',
     'no_prescriptions_registered' => 'No prescriptions registered.',
     'patient_instructions' => 'Patient Instructions',
     'patient_instructions_placeholder' => 'Rest, diet, general care...',
@@ -206,13 +257,6 @@ return [
     'days' => 'Days',
     'weeks' => 'Weeks',
     'months' => 'Months',
-    'msg_prescription_saved' => 'Prescription issued and saved successfully.',
-    'msg_triage_saved' => 'Triage registered correctly.',
-    'msg_case_saved' => 'Clinical case opened successfully.',
-    'msg_profile_updated' => 'Profile updated successfully.',
-    'msg_evolution_saved' => 'Evolution saved successfully.',
-    'msg_evolution_not_saved' => 'Error: The evolution could not be saved.',
-    'msg_consultation_saved' => 'Consultation saved successfully.',
 
     // Block 4: Administration & Billing
     'billing_and_admin' => 'Billing and Administration',
@@ -231,7 +275,7 @@ return [
     'modal_new_patient_subtitle' => 'Enter general information to open the medical record.',
     'section_personal_data' => 'Personal Information',
     'section_contact_location' => 'Contact and Location',
-    'modal_close_title' => 'Do you want to cancel the registration?',
+    'modal_close_title' => 'Do you want to cancelE the registration?',
     'modal_close_text' => 'The data entered will be lost.',
     'modal_close_confirm' => 'Yes, cancel',
     'modal_close_cancel' => 'No, continue',

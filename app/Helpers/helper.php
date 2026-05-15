@@ -39,3 +39,49 @@ function format_date($date_string, $include_time = false) {
         return $date_string; 
     }
 }
+
+/**
+ * Calcula la edad de forma dinámica con precisión para pediatría.
+ */
+function calculate_age($birth_date_string) {
+    if (empty($birth_date_string)) return '---';
+
+    try {
+        $birthDate = new DateTime($birth_date_string);
+        $now = new DateTime();
+        $diff = $birthDate->diff($now);
+
+        // 1. Caso: 5 años o más (Solo años)
+        if ($diff->y >= 5) {
+            return $diff->y . ' ' . __('lbl_years');
+        } 
+        
+        // 2. Caso: Entre 1 y 5 años (Años y Meses)
+        if ($diff->y >= 1) {
+            $yearsLabel = ($diff->y == 1) ? __('lbl_year') : __('lbl_years');
+            $age = $diff->y . ' ' . $yearsLabel;
+            
+            if ($diff->m > 0) {
+                $monthsLabel = ($diff->m == 1) ? __('lbl_month') : __('lbl_months');
+                $age .= ' ' . __('lbl_and') . ' ' . $diff->m . ' ' . $monthsLabel;
+            }
+            return $age;
+        } 
+        
+        // 3. Caso: Menos de 1 año, pero 1 mes o más
+        if ($diff->m > 0) {
+            return $diff->m . ' ' . (($diff->m == 1) ? __('lbl_month') : __('lbl_months'));
+        } 
+        
+        // 4. Caso: Menos de 1 mes (Semanas o Días)
+        if ($diff->d >= 7) {
+            $weeks = floor($diff->d / 7);
+            return $weeks . ' ' . (($weeks == 1) ? __('lbl_week') : __('lbl_weeks'));
+        } 
+        
+        return $diff->d . ' ' . (($diff->d == 1) ? __('lbl_day') : __('lbl_days'));
+
+    } catch (Exception $e) {
+        return '---';
+    }
+}

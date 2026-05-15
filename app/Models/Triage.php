@@ -28,12 +28,12 @@ class Triage {
     public function create($data) {
         try {
             $sql = "INSERT INTO clinic_triage (
-                        person_ID, created_by_user_ID, 
+                        person_ID, evolution_ID, created_by_user_ID, 
                         weight_value, weight_unit, height_value, height_unit,
                         temperature_value, temperature_unit,
                         systolic_bp, diastolic_bp, heart_rate_bpm, oxygen_saturation_pct
                     ) VALUES (
-                        :person_id, :user_id,
+                        :person_id, :evolution_id, :user_id,
                         :w_val, :w_unit, :h_val, :h_unit,
                         :t_val, :t_unit,
                         :sys, :dia, :hr, :spo2
@@ -41,6 +41,7 @@ class Triage {
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
                 'person_id' => $data['person_id'],
+                'evolution_id' => $data['evolution_id'] ?? null,
                 'user_id'   => $data['user_id'],
                 'w_val'     => !empty($data['weight_value']) ? $data['weight_value'] : null,
                 'w_unit'    => $data['weight_unit'],

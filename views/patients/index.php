@@ -55,24 +55,21 @@
                                         <div>
                                             <p class="font-semibold text-slate-800"><?= htmlspecialchars($p['first_name'] . ' ' . $p['last_name']) ?></p>
                                             <p class="text-xs text-slate-400 font-mono">ID: <?= strtoupper(substr($p['uuid'], 0, 8)) ?></p>
+                                            <p class="text-xs text-slate-500 font-mono flex items-center"><span><?= empty($p['identity_number']) ? __('lbl_tutor').' - '.__($p['tutor_id_type']) : __($p['patient_id_type']) ?>:</span> <span class="ml-1 font-bold"><?= empty($p['identity_number']) ? $p['tutor_identity_number'] : $p['identity_number']  ?></span></p>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-sm">
-                                    <?php if(!empty($p['primary_cellphone'])): ?>
-                                        <p class="text-slate-600 font-medium"><?= htmlspecialchars($p['primary_cellphone']) ?></p>
-                                    <?php elseif(!empty($p['tutor_phone'])): ?>
-                                        <p class="text-slate-600 font-medium flex items-center">
-                                            <?= htmlspecialchars($p['tutor_phone']) ?>
-                                            <span class="ml-2 px-1.5 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase rounded border border-indigo-100">
-                                                <?= $p['tutor_relation_translated'] ?>
-                                            </span>
-                                        </p>
+                                    <?php if(!empty($p['tutor_relation'])): ?>
+                                        <span class="ml-2 px-1.5 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase rounded border border-indigo-100">
+                                            <?= $p['tutor_relation_translated'] ?>
+                                        </span>
+                                        <p class="text-slate-600 font-medium flex items-center"><?= htmlspecialchars($p['tutor_phone'] ?? '---') ?></p>
+                                        <p class="text-slate-400 text-xs mt-0.5"><?= htmlspecialchars($p['tutor_email'] ?? '---') ?></p>
                                     <?php else: ?>
-                                        <p class="text-slate-400 font-medium">---</p>
+                                        <p class="text-slate-600 font-medium"><?= htmlspecialchars($p['primary_cellphone'] ?? '---') ?></p>
+                                        <p class="text-slate-400 text-xs mt-0.5"><?= htmlspecialchars($p['primary_email'] ?? '---') ?></p>
                                     <?php endif; ?>
-                                    
-                                    <p class="text-slate-400 text-xs mt-0.5"><?= htmlspecialchars($p['primary_email'] ?? '---') ?></p>
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="px-3 py-1 text-[10px] font-bold uppercase rounded-full bg-emerald-100 text-emerald-700">
@@ -149,7 +146,7 @@
                         </div>
 
                         <div class="sm:col-span-2">
-                            <label class="block text-sm font-medium text-slate-700 mb-1"><?= __('lbl_identity_number') ?></label>
+                            <label class="block text-sm font-medium text-slate-700 mb-1"><?= __('lbl_identity_number') ?><span id="asterisk-doc" class="text-rose-500 ml-1">*</span></label>
                             <div class="relative">
                                 <i data-lucide="id-card" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4"></i>
                                 <input type="text" name="identity_number" id="identity_number" placeholder="<?= __('lbl_identity_number_help') ?>" class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
@@ -296,6 +293,12 @@
 
 <script>
     const urlBase = '<?= URL_BASE ?>';
+    
+    <?php 
+    // Recuperar datos si hubo un error en el backend para no perderlos
+    $oldInput = $_SESSION['old_input'] ?? []; 
+    unset($_SESSION['old_input']); // Limpiar sesión inmediatamente
+    ?>
 
     document.addEventListener('DOMContentLoaded', function() {
         // --- 1. VARIABLES GLOBALES DE LA VISTA ---
@@ -307,7 +310,36 @@
         const formNuevo = document.getElementById('formNuevoPaciente');
         const tutorToggle = document.getElementById('tutorToggle');
         const tutorFields = document.getElementById('tutorFields');
-        const backdrop = document.getElementById('modalBackdrop'); // Asegúrate de tener este ID en tu HTML (Punto 1 de mi respuesta anterior)
+        const backdrop = document.getElementById('modalBackdrop');
+
+        // --- RECUPERACIÓN DE DATOS ANTE ERRORES DEL SERVIDOR ---
+        const oldInput = <?= json_encode($oldInput) ?>;
+        if (Object.keys(oldInput).length > 0) {
+            // Rellenar todos los inputs con lo que el usuario había escrito
+            Object.keys(oldInput).forEach(key => {
+                const el = formNuevo.querySelector(`[name="${key}"]`);
+                if (el) {
+                    if (el.type === 'checkbox') {
+                        el.checked = !!oldInput[key];
+                    } else {
+                        el.value = oldInput[key];
+                    }
+                }
+            });
+
+            // Si tenía el tutor activado, desplegamos la sección de tutor
+            if (oldInput.requires_tutor) {
+                tutorFields.classList.remove('hidden');
+                tutorFields.querySelectorAll('input').forEach(i => { if(i.name !== 'tutor_phone') i.required = true; });
+
+                // Ocultamos el asterisco al reabrir
+                const asteriskDoc = document.getElementById('asterisk-doc');
+                if (asteriskDoc) asteriskDoc.classList.add('hidden');
+            }
+
+            // Reabrimos el modal automáticamente
+            if (typeof openModal === 'function') openModal('modalNuevoPaciente');
+        }
 
         // --- 2. PROTECCIÓN DEL MODAL (Evitar perder datos) ---
         if (backdrop) {
@@ -348,7 +380,7 @@
 
         // --- 3. VALIDACIÓN FRONTEND (Regex del DPI/Documentos) ---
         function validateInputRegex(selectElement, inputElement) {
-            if (!selectElement || !inputElement) return true; // Si no existen, pasa
+            if (!selectElement || !inputElement) return true;
 
             const selectedOption = selectElement.options[selectElement.selectedIndex];
             if (!selectedOption) return true;
@@ -370,13 +402,31 @@
             formNuevo.addEventListener('submit', function(e) {
                 let isValid = true;
 
-                // Validar Paciente
                 const typePatient = document.getElementById('identity_type_ID');
                 const inputPatient = document.getElementById('identity_number');
+                
+                // NUEVA VALIDACIÓN: Bloqueo estricto si no hay ID ni Tutor
+                const isTutorChecked = tutorToggle && tutorToggle.checked;
+                
+                if (!isTutorChecked && inputPatient.value.trim() === '') {
+                    isValid = false;
+                    inputPatient.classList.add('border-red-500', 'bg-red-50', 'text-red-700');
+                    
+                    e.preventDefault(); // BLOQUEA EL ENVÍO (El modal no se cierra)
+                    
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Documento Requerido',
+                        text: 'Debes ingresar el documento de identidad. Si el paciente no posee uno (ej. menor de edad), debes asignarle un Tutor responsable.'
+                    });
+                    return; // Detiene la ejecución
+                }
+
+                // Validar formato Regex del Paciente
                 if (!validateInputRegex(typePatient, inputPatient)) isValid = false;
 
                 // Validar Tutor (si aplica)
-                if (tutorToggle && tutorToggle.checked) {
+                if (isTutorChecked) {
                     const typeTutor = document.querySelector('select[name="tutor_identity_type_ID"]');
                     const inputTutor = document.querySelector('input[name="tutor_identity_number"]');
                     if (!validateInputRegex(typeTutor, inputTutor)) isValid = false;
@@ -399,17 +449,24 @@
 
         // --- 4. LÓGICA DEL TOGGLE DE TUTOR ---
         if (tutorToggle) {
+            const asteriskDoc = document.getElementById('asterisk-doc'); // Buscamos el asterisco
+            
             tutorToggle.addEventListener('change', function() {
                 if (this.checked) {
                     tutorFields.classList.remove('hidden');
                     tutorFields.querySelectorAll('input').forEach(i => { if(i.name !== 'tutor_phone') i.required = true; });
+                    
+                    if (asteriskDoc) asteriskDoc.classList.add('hidden'); // Ocultar asterisco
                 } else {
+                    // NO TIENE TUTOR: Ocultamos campos del tutor y exigimos el documento del paciente
                     tutorFields.classList.add('hidden');
                     tutorFields.querySelectorAll('input').forEach(i => { 
                         i.required = false; 
                         i.value = ''; 
                         i.classList.remove('border-red-500', 'bg-red-50', 'text-red-700'); // Limpiar errores al ocultar
                     });
+
+                    if (asteriskDoc) asteriskDoc.classList.remove('hidden'); // Mostrar asterisco
                 }
             });
         }
@@ -440,6 +497,16 @@
                                 data.forEach(p => {
                                     const initials = (p.first_name.charAt(0) + p.last_name.charAt(0)).toUpperCase();
                                     const uuidShort = p.uuid ? p.uuid.substring(0, 8).toUpperCase() : '---';
+                                    
+                                    const tutorData = p.tutor_relation 
+                                        ? `<span class="ml-2 px-1.5 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase rounded border border-indigo-100">${p.tutor_relation_translated}</span>`
+                                            + (p.tutor_phone ? `<p class="text-slate-600 font-medium flex items-center">${p.tutor_phone}</p>` : `---`)
+                                            + (p.tutor_email ? `<p class="text-slate-400 text-xs mt-0.5">${p.tutor_email}</p>` : `---`)
+                                        : (p.primary_cellphone ? `<p class="text-slate-600 font-medium flex items-center">${p.primary_cellphone}</p>` : `---`)
+                                            + (p.primary_email ? `<p class="text-slate-400 text-xs mt-0.5">${p.primary_email}</p>` : `---`);
+
+                                    const docType = p.identity_number ? p.identity_type_translated : p.tutor_identity_type_translated;
+                                    const docNumber = p.identity_number ? p.identity_number : p.tutor_identity_number;
                                     const tr = document.createElement('tr');
                                     tr.className = 'hover:bg-slate-50/50 transition-colors';
                                     tr.innerHTML = `
@@ -449,16 +516,12 @@
                                                 <div>
                                                     <p class="font-semibold text-slate-800">${p.first_name} ${p.last_name}</p>
                                                     <p class="text-xs text-slate-400 font-mono">ID: ${uuidShort}</p>
+                                                    <p class="text-xs text-slate-500 font-mono flex items-center"><span>${docType}:</span> <span class="ml-1 font-bold">${docNumber}</span></p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 text-sm">
-                                            ${p.primary_cellphone 
-                                                ? `<p class="text-slate-600 font-medium">${p.primary_cellphone}</p>` 
-                                                : (p.tutor_phone 
-                                                    ? `<p class="text-slate-600 font-medium flex items-center">${p.tutor_phone} <span class="ml-2 px-1.5 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase rounded border border-indigo-100">${p.tutor_relation_translated}</span></p>`
-                                                    : `<p class="text-slate-400 font-medium">---</p>`)}
-                                            <p class="text-slate-400 text-xs">${p.primary_email || '---'}</p>
+                                            ${tutorData}
                                         </td>
                                         <td class="px-6 py-4"><span class="px-3 py-1 text-[10px] font-bold uppercase rounded-full bg-emerald-100 text-emerald-700">${p.status_translated}</span></td>
                                         <td class="px-6 py-4 text-right">

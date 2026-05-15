@@ -23,6 +23,8 @@ return [
     'cancel_btn' => 'Cancelar',
     'save_btn' => 'Guardar',
     'edit_data' => 'Editar Datos',
+    'edit_btn' => 'Editar',
+    'delete_btn' => 'Eliminar',
 
     // Estados
     'status_Active' => 'Activo',
@@ -31,7 +33,18 @@ return [
 
     // Etiquetas
     'not_registered' => 'No registrado',
-
+    'lbl_and'    => 'y',
+    'lbl_year'   => 'año',
+    'lbl_years'  => 'años',
+    'lbl_month'  => 'mes',
+    'lbl_months' => 'meses',
+    'lbl_week'   => 'semana',
+    'lbl_weeks'  => 'semanas',
+    'lbl_day'    => 'día',
+    'lbl_days'   => 'días',
+    'read_more' => 'Ver más...',
+    'read_less' => 'Ver menos...',
+    
     // ==========================================
     // MENSAJES Y ALERTAS
     // ==========================================
@@ -39,7 +52,7 @@ return [
     'msg_login_error_label' => 'El correo o la contraseña son incorrectos.',
     'msg_user_or_password_incorrect_error' => 'El correo o la contraseña son incorrectos.',
     'msg_clinic_not_found_error' => 'El código de clínica no existe.',
-    'msg_error_empty_fields' => 'Los nombres, apellidos y fecha de nacimiento no pueden estar vacíos.',
+    'msg_error_patient_empty_fields' => 'Los nombres, apellidos y fecha de nacimiento no pueden estar vacíos.',
     'msg_error_email' => 'El formato del correo electrónico ingresado no es válido.',
     'msg_error_database' => 'Error al registrar: Ocurrió un problema en la base de datos.',
     'msg_all_fields_required' => 'Todos los campos son obligatorios.',
@@ -49,6 +62,21 @@ return [
     'msg_patient_saved' => 'Paciente registrado exitosamente. Por favor, completa su expediente.',
     'msg_patient_exists' => 'Este paciente ya estaba registrado en tu clínica.',
     'msg_evolution_saved' => 'Evolución guardada exitosamente.',
+    'msg_prescription_saved' => 'Prescripción emitida y guardada correctamente.',
+    'msg_triage_saved' => 'Triage registrado correctamente.',
+    'msg_no_case_created' => 'Debe crear un caso clínico antes de continuar.',
+    'msg_case_not_found' => 'Caso clínico no encontrado.',
+    'msg_case_saved' => 'Caso clínico aperturado correctamente.',
+    'msg_case_edited' => 'Caso clínico actualizado correctamente.',
+    'msg_profile_updated' => 'Perfil actualizado correctamente.',
+    'msg_evolution_saved' => 'Evolución guardada correctamente.',
+    'msg_evolution_not_saved' => 'Error: La evolución no se pudo guardar.',
+    'msg_consultation_saved' => 'Consulta completada correctamente.',
+    'msg_error_identity_required' => 'El documento de identidad es obligatorio.',
+    'msg_patient_info_not_editable' => 'La información del paciente no se puede modificar.',
+    'msg_appointment_scheduled' => 'Cita agendada exitosamente.',
+    'msg_error' => 'Error: La acción no se pudo completar.',
+    'msg_error_not_found' => 'Error: El recurso solicitado no se encontró.',
 
     // ==========================================
     // AUTENTICACIÓN (LOGIN / LOGOUT)
@@ -137,6 +165,10 @@ return [
     'active_case' => 'Caso Clínico Activo',
     'no_active_case' => 'Debe seleccionar o aperturar un caso clínico activo.',
     'clinical_data' => 'Datos Clínicos del Caso',
+    'general_data' => 'Datos Generales',
+    'medical_history' => 'Historia Clínica',
+    'vital_sign_charts' => 'Gráficas de Signos Vitales',
+    'pediatric_charts' => 'Gráficas de Crecimiento (OMS)',
     'no_cases_registered' => 'No se encontraron casos registrados',
     'new_clinical_case' => 'Expediente Clínico Nuevo',
     'no_cases_registered_text' => 'Este paciente aún no tiene ningún problema de salud registrado. Para iniciar una consulta, primero debes aperturar un caso.',
@@ -145,7 +177,13 @@ return [
     'initial_diagnosis' => 'Diagnóstico Inicial',
     'opened_at' => 'Aperturado',
     'doctor' => 'Doctor(a)',
-
+    'all_data' => 'Todo',
+    'evolutions' => 'Evoluciones',
+    'vitals_signs' => 'Signos Vitales',
+    'prescriptions' => 'Recetas',
+    'documents' => 'Documentos',
+    'all_doctors' => 'Todos los doctores',
+    
     // Flujo de Consulta Unificada
     'new_consultation' => 'Nueva Consulta Completa',
     'finalize_consultation' => 'Finalizar Consulta',
@@ -157,11 +195,23 @@ return [
     'vital_signs' => 'Signos Vitales',
     'vital_signs_history' => 'Historial de Signos Vitales',
     'btn_new_triage' => 'Nuevo Triaje',
-    'blood_pressure' => 'Presión Arterial',
+    'btn_save_triage' => 'Guardar Triaje',
+    'blood_pressure' => 'Presión Arterial (mmHg)',
     'weight' => 'Peso',
     'height' => 'Estatura',
     'temperature' => 'Temperatura',
-    'kg' => 'kg', 'lb' => 'lb', 'cm' => 'cm', 'm' => 'm', 'in' => 'in', 'ft' => 'ft', 'C' => '°C', 'F' => '°F',
+    'heart_rate' => 'Frecuencia Cardíaca (LPM)',
+    'oxygen_saturation' => 'Saturación de Oxígeno (%)',
+    'head_circumference' => 'Perímetro Cefálico',
+    'kg' => 'kg',
+    'lb' => 'lb',
+    'cm' => 'cm',
+    'm' => 'm',
+    'in' => 'in',
+    'ft' => 'ft',
+    'C' => '°C',
+    'F' => '°F',
+    'calculated_bmi' => 'El sistema calculará el IMC (BMI) automáticamente al guardar.',
 
     // Bloque 2: Evolución SOAP
     'evolution_soap' => 'Evolución SOAP',
@@ -179,6 +229,7 @@ return [
     // Bloque 3: Recetas y Plan
     'prescriptions_plans' => 'Recetas Médicas y Plan',
     'btn_new_prescription' => 'Nueva Receta',
+    'btn_save_prescription' => 'Guardar Receta',
     'no_prescriptions_registered' => 'No se encontraron recetas emitidas en este caso.',
     'patient_instructions' => 'Instrucciones para el Paciente',
     'patient_instructions_placeholder' => 'Reposo, dieta, cuidados generales...',
@@ -204,13 +255,9 @@ return [
     'ml' => 'ml',
     'mg' => 'mg',
     'drop' => 'Gotas',
-    'msg_prescription_saved' => 'Prescripción emitida y guardada correctamente.',
-    'msg_triage_saved' => 'Triage registrado correctamente.',
-    'msg_case_saved' => 'Caso clínico aperturado correctamente.',
-    'msg_profile_updated' => 'Perfil actualizado correctamente.',
-    'msg_evolution_saved' => 'Evolución guardada correctamente.',
-    'msg_evolution_not_saved' => 'Error: La evolución no se pudo guardar.',
-    'msg_consultation_saved' => 'Consulta completada correctamente.',
+    'days' => 'Días',
+    'weeks' => 'Semanas',
+    'months' => 'Meses',
 
     // Bloque 4: Administración y Cobro
     'billing_and_admin' => 'Cobro y Administración',
